@@ -17,9 +17,8 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("mysql", "rds_pharmacy_00:phar00macy@tcp(rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com)/rdspharmacy00")
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
-	message = "Get Userv !!!-db: " + db + " error: " + err
+	message = "Get Userv !!!-db:  error" + err.Error()
 	w.Write([]byte(message))
-	sayUser(d)
 }
 
 func main() {
