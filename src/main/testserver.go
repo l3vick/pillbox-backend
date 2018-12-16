@@ -15,6 +15,8 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 
 func getUser(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("mysql", "rds_pharmacy_00:phar00macy@tcp(rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com)/rdspharmacy00")
+
+	defer db.Close()
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
 	message = "Get Userv !!!-db:  error" + err.Error()
