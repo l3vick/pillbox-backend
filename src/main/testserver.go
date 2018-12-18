@@ -2,9 +2,17 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 )
+
+type Med struct {
+	id   int
+	name string
+}
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
@@ -13,24 +21,72 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(message))
 }
 
-func getUser(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("mysql", "rds_pharmacy_00:phar00macy@tcp(rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com)/rdspharmacy00")
+func getmed(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"rds_pharmacy")
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+	selDB, err := db.Query("SELECT * FROM med ")
+	if err != nil {
+		panic(err.Error())
+	}
 
-	defer db.Close()
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
-	message = "Get Userv !!!-db:  error" + err.Error()
-	w.Write([]byte(message))
+
+	w.Header().Set("Content-Type", "application/json")
+
+	for selDB.Next() {
+		var id int
+		var name string
+		err = selDB.Scan(&id, &name)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		e := Med{
+			id:   &id,
+			name: &name
+		}
+		medJSON, err := json.Marshal(e)
+		if err != nil {
+			// handle error
+		}
+		//message = "id: " + string(med.id) + " name: " + med.name
+		//message = " name " + name
+		//json.NewEncoder(w).Encode(med)
+		w.Write([]byte(medJSON))
+	}
+
+	defer db.Close()
+
+}
+
+func conectDB() {
+	db, err := sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"rds_pharmacy")
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+	defer db.Close()
+
+	// Open doesn't open a connection. Validate DSN data:
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // proper error handling instead of panic in your app
+	}
+
 }
 
 func main() {
+
+	//conectDB()
+
+	http.HandleFunc("/getmed", getmed)
+
 	http.HandleFunc("/", sayHello)
+
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
 
-	http.HandleFunc("/hola", getUser)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		panic(err)
-	}
 }
