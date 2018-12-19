@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -43,19 +42,19 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-
-		e := Med{
-			id:   &id,
-			name: &name
-		}
-		medJSON, err := json.Marshal(e)
-		if err != nil {
-			// handle error
-		}
+		/*
+			e := Med{
+				id:   &id,
+				name: &name
+			}
+			medJSON, err := json.Marshal(e)
+			if err != nil {
+				// handle error
+			}*/
 		//message = "id: " + string(med.id) + " name: " + med.name
-		//message = " name " + name
-		//json.NewEncoder(w).Encode(med)
-		w.Write([]byte(medJSON))
+		message = " name " + name
+
+		w.Write([]byte(message))
 	}
 
 	defer db.Close()
