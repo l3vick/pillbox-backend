@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 type Med struct {
 	id   int
 	name string
+	pvp  int
 }
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +27,7 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
-	selDB, err := db.Query("SELECT * FROM med ")
+	selDB, err := db.Query("SELECT * FROM med LIMIT 0, 10")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -38,23 +40,25 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 	for selDB.Next() {
 		var id int
 		var name string
+		var pvp int
 		err = selDB.Scan(&id, &name)
 		if err != nil {
 			panic(err.Error())
 		}
-		/*
+
 			e := Med{
-				id:   &id,
-				name: &name
+				id:   id,
+				name: name,
+				pvp:  pvp,
 			}
 			medJSON, err := json.Marshal(e)
 			if err != nil {
 				// handle error
-			}*/
+			}
 		//message = "id: " + string(med.id) + " name: " + med.name
-		message = " name " + name
+		//message = " name " + name
 
-		w.Write([]byte(message))
+		w.Write([]byte(medJSON))
 	}
 
 	defer db.Close()
