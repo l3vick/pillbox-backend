@@ -3,12 +3,13 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
+
+var db *sql.DB
 
 type Med struct {
 	ID   int
@@ -24,10 +25,9 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func getmed(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"rds_pharmacy")
-	if err != nil {
-		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
-	}
+
+	var meds []*Med
+
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
@@ -47,20 +47,24 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		e := Med{
+		med := Med{
 			ID:   id,
 			Name: name,
 			Pvp:  pvp,
 		}
-		medJSON, err := json.Marshal(e)
-		if err != nil {
-			// handle error
-		}
 
-		fmt.Println(e)
+		meds = append(meds, &med)
 
-		w.Write([]byte(medJSON))
 	}
+
+	medJSON, err := json.MarshalIndent(meds, "", " ")
+	if err != nil {
+		// handle error
+	}
+
+	//	fmt.Println(meds)
+
+	w.Write([]byte(medJSON))
 
 	defer db.Close()
 
@@ -72,18 +76,11 @@ func conectDB() {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
 	defer db.Close()
-
-	// Open doesn't open a connection. Validate DSN data:
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
-	}
-
 }
 
 func main() {
 
-	//conectDB()
+	conectDB()
 
 	http.HandleFunc("/getmed", getmed)
 
