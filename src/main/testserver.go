@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -10,9 +11,9 @@ import (
 )
 
 type Med struct {
-	id   int
-	name string
-	pvp  int
+	ID   int
+	Name string
+	Pvp  int
 }
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +28,7 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
-	selDB, err := db.Query("SELECT * FROM med LIMIT 0, 10")
+	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -41,22 +42,22 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 		var id int
 		var name string
 		var pvp int
-		err = selDB.Scan(&id, &name)
+		err = selDB.Scan(&id, &name, &pvp)
 		if err != nil {
 			panic(err.Error())
 		}
 
-			e := Med{
-				id:   id,
-				name: name,
-				pvp:  pvp,
-			}
-			medJSON, err := json.Marshal(e)
-			if err != nil {
-				// handle error
-			}
-		//message = "id: " + string(med.id) + " name: " + med.name
-		//message = " name " + name
+		e := Med{
+			ID:   id,
+			Name: name,
+			Pvp:  pvp,
+		}
+		medJSON, err := json.Marshal(e)
+		if err != nil {
+			// handle error
+		}
+
+		fmt.Println(e)
 
 		w.Write([]byte(medJSON))
 	}
