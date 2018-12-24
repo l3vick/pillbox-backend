@@ -9,13 +9,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
-
 type Med struct {
 	ID   int
 	Name string
 	Pvp  int
 }
+
+var db *sql.DB
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
@@ -70,6 +70,37 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func getMedById(w http.ResponseWriter, r *http.Request) {
+	nId := r.URL.Query().Get("id")
+	selDB, err := db.Query("SELECT * FROM med WHERE id=?", nId)
+	if err != nil {
+		panic(err.Error())
+	}
+	med := Med{}
+	for selDB.Next() {
+		var id, pvp int
+		var name string
+		err = selDB.Scan(&id, &name, &pvp)
+		if err != nil {
+			panic(err.Error())
+		}
+		med.ID = id
+		med.Name = name
+		med.Pvp = pvp
+	}
+
+	medJSON, err := json.MarshalIndent(med, "", " ")
+	if err != nil {
+		// handle error
+	}
+
+	//	fmt.Println(meds)
+
+	w.Write([]byte(medJSON))
+
+	defer db.Close()
+}
+
 func conectDB() {
 
 	var err error
@@ -86,6 +117,8 @@ func main() {
 	conectDB()
 
 	http.HandleFunc("/getmed", getmed)
+
+	http.HandleFunc("/getmedbyid", getMedById)
 
 	http.HandleFunc("/", sayHello)
 
