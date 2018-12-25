@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
+	"github.com/gorilla/mux"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -13,6 +15,17 @@ type Med struct {
 	ID   int
 	Name string
 	Pvp  int
+}
+
+type Users struct {
+	Id               int
+	Name             string
+	MedBreackfast   int
+	MedLaunch       int
+	MedDinner       int
+	AlarmBreackfast string
+	AlarmLaunch     string
+	AlarmDinner     string
 }
 
 var db *sql.DB
@@ -112,15 +125,126 @@ func conectDB() {
 
 }
 
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	var users []*Users
+
+	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	for selDB.Next() {
+		var id int
+		var name string
+		var medBreackfast int
+		var medLaunch int
+		var medDinner int
+		var alarmBreackfast string
+		var alarmLaunch string
+		var alarmDinner string
+
+		err = selDB.Scan(&id, &name, &medBreackfast, &medLaunch, &medDinner, &alarmBreackfast, &alarmLaunch, &alarmDinner)
+		
+		if err != nil {
+			panic(err.Error())
+		}
+
+		user := Users{
+			Id: id,
+			Name: name,
+			MedBreackfast: medBreackfast,
+			MedLaunch: medLaunch,
+			MedDinner: medDinner,
+			AlarmBreackfast: alarmBreackfast,
+			AlarmLaunch: alarmLaunch,
+			AlarmDinner: alarmDinner,
+		}
+
+		users = append(users, &user)
+
+	}
+
+	usersJSON, err := json.MarshalIndent(users, "", " ")
+
+	if err != nil {
+		// handle error
+	}
+
+	w.Write([]byte(usersJSON))
+
+	defer db.Close()
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	nId := r.URL.Query().Get("id")
+	user := Users{}
+
+	selDB, err := db.Query("SELECT * FROM users WHERE id=?", nId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for selDB.Next() {
+		var id, medBreackfast, medLaunch, medDinner int
+		var name, alarmBreackfast, alarmLaunch, alarmDinner string
+		err = selDB.Scan(&id, &name, &medBreackfast, &medDinner, &medLaunch, &alarmDinner, &alarmLaunch, &alarmBreackfast)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		user.Id = id
+		user.Name = name
+		user.MedBreackfast = medBreackfast
+		user.MedLaunch = medLaunch
+		user.MedDinner = medDinner
+		user.AlarmBreackfast = alarmBreackfast
+		user.AlarmLaunch = alarmLaunch
+		user.AlarmDinner = alarmDinner
+	}
+
+	userJSON, err := json.MarshalIndent(user, "", " ")
+	if err != nil {
+		// handle error
+	}
+
+	w.Write([]byte(userJSON))
+
+	defer db.Close()
+}
+
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
 
 	conectDB()
+
+	router := mux.NewRouter()
+	router.HandleFunc("/", sayHello).Methods("GET")
 
 	http.HandleFunc("/getmed", getmed)
 
 	http.HandleFunc("/getmedbyid", getMedById)
 
-	http.HandleFunc("/", sayHello)
+	//router.HandleFunc("/meds", getmed).Methods("GET")
+	//router.HandleFunc("/meds/{id}", getMedById).Methods("GET")
+	//router.HandleFunc("/meds/{id}", CreateMed).Methods("POST")
+	//router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
+
+	router.HandleFunc("/users", GetUsers).Methods("GET")
+	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	router.HandleFunc("/users/{id}", CreateUser).Methods("POST")
+	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+	log.Fatal(http.ListenAndServe(":8080", router))
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
