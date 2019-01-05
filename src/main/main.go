@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
 	"github.com/gorilla/mux"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -18,8 +19,8 @@ type Med struct {
 }
 
 type Users struct {
-	Id               int
-	Name             string
+	Id              int
+	Name            string
 	MedBreackfast   int
 	MedLaunch       int
 	MedDinner       int
@@ -30,25 +31,30 @@ type Users struct {
 
 var db *sql.DB
 
-func sayHello(w http.ResponseWriter, r *http.Request) {
+func root(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
-	message = "Estoy funcionando!!!!-------------------" + message
+	message = "App Farmacias" + message
 	w.Write([]byte(message))
 }
 
-func getmed(w http.ResponseWriter, r *http.Request) {
+func conectDB() {
+	var err error
+	db, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"rds_pharmacy")
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+}
 
+func GetMeds(w http.ResponseWriter, r *http.Request) {
+	conectDB()
 	var meds []*Med
-
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
 	}
-
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
-
 	w.Header().Set("Content-Type", "application/json")
 
 	for selDB.Next() {
@@ -59,36 +65,34 @@ func getmed(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-
 		med := Med{
 			ID:   id,
 			Name: name,
 			Pvp:  pvp,
 		}
-
 		meds = append(meds, &med)
-
 	}
 
 	medJSON, err := json.MarshalIndent(meds, "", " ")
 	if err != nil {
 		// handle error
 	}
-
-	//	fmt.Println(meds)
-
 	w.Write([]byte(medJSON))
-
 	defer db.Close()
-
 }
 
-func getMedById(w http.ResponseWriter, r *http.Request) {
-	nId := r.URL.Query().Get("id")
-	selDB, err := db.Query("SELECT * FROM med WHERE id=?", nId)
+func GetMed(w http.ResponseWriter, r *http.Request) {
+	conectDB()
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	selDB, err := db.Query("SELECT * FROM med WHERE id=?", nID)
 	if err != nil {
 		panic(err.Error())
 	}
+
 	med := Med{}
 	for selDB.Next() {
 		var id, pvp int
@@ -107,21 +111,21 @@ func getMedById(w http.ResponseWriter, r *http.Request) {
 		// handle error
 	}
 
-	//	fmt.Println(meds)
-
 	w.Write([]byte(medJSON))
-
 	defer db.Close()
 }
 
-func conectDB() {
+func CreateMed(w http.ResponseWriter, r *http.Request) {
+	conectDB()
 
-	var err error
-
-	db, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"rds_pharmacy")
+	insert, err := db.Query("INSERT INTO `rds_pharmacy`.`users` (`id`, `name`, `med_breakfast`, `med_launch`, `med_dinner`, `alarm_breakfast`, `alarm_launch`, `alarm_dinner`) VALUES ('0', 'erere', '{4,2}', '{1,3}', '{112,312}', '09:10', '15:00', '21:00')")
 	if err != nil {
-		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+		panic(err.Error())
 	}
+
+	//w.Write([]byte(medJSON))
+	defer insert.Close()
+	defer db.Close()
 
 }
 
@@ -146,20 +150,20 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		var alarmDinner string
 
 		err = selDB.Scan(&id, &name, &medBreackfast, &medLaunch, &medDinner, &alarmBreackfast, &alarmLaunch, &alarmDinner)
-		
+
 		if err != nil {
 			panic(err.Error())
 		}
 
 		user := Users{
-			Id: id,
-			Name: name,
-			MedBreackfast: medBreackfast,
-			MedLaunch: medLaunch,
-			MedDinner: medDinner,
+			Id:              id,
+			Name:            name,
+			MedBreackfast:   medBreackfast,
+			MedLaunch:       medLaunch,
+			MedDinner:       medDinner,
 			AlarmBreackfast: alarmBreackfast,
-			AlarmLaunch: alarmLaunch,
-			AlarmDinner: alarmDinner,
+			AlarmLaunch:     alarmLaunch,
+			AlarmDinner:     alarmDinner,
 		}
 
 		users = append(users, &user)
@@ -229,11 +233,12 @@ func main() {
 	conectDB()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", sayHello).Methods("GET")
+	router.HandleFunc("/", root).Methods("GET")
 
-	http.HandleFunc("/getmed", getmed)
+	router.HandleFunc("/meds", GetMeds).Methods("GET")
 
-	http.HandleFunc("/getmedbyid", getMedById)
+	router.HandleFunc("/med/{id}", GetMed).Methods("GET")
+	router.HandleFunc("/med", CreateMed).Methods("GET")
 
 	//router.HandleFunc("/meds", getmed).Methods("GET")
 	//router.HandleFunc("/meds/{id}", getMedById).Methods("GET")
@@ -244,6 +249,9 @@ func main() {
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/users/{id}", CreateUser).Methods("POST")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+
+	http.Handle("/", router)
+
 	log.Fatal(http.ListenAndServe(":8080", router))
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
