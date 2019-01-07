@@ -13,8 +13,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Users struct {
-	Id              int
+type Med struct {
+	ID   int
+	Name string `json:"name"`
+	Pvp  int    `json:"pvp"`
+}
+
+type User struct {
+	ID              int
 	Name            string
 	MedBreackfast   int
 	MedLaunch       int
@@ -41,8 +47,11 @@ func conectDB() {
 	}
 }
 
+func closeDB() {
+	defer db.Close()
+}
+
 func GetMeds(w http.ResponseWriter, r *http.Request) {
-	conectDB()
 	var meds []*Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
@@ -73,7 +82,6 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(output)
-	defer db.Close()
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
@@ -101,13 +109,6 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		med.Pvp = pvp
 	}
 
-	//medJSON, err := json.MarshalIndent(med, "", " ")
-	//if err != nil {
-	// handle error
-	//}
-
-	//	w.Write([]byte(medJSON))
-
 	output, err := json.Marshal(med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -115,13 +116,9 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
-
-	defer db.Close()
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
-	conectDB()
-
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -129,7 +126,6 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
 	// Unmarshal
 	var t Med
 	err = json.Unmarshal(b, &t)
@@ -147,24 +143,19 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
-	var query string = fmt.Sprintf("INSERT INTO `rds_pharmacy`.`med` (`name`, `pvp`) VALUES('%s','%d')", t.Name, t.Pvp)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`med` (`name`, `pvp`) VALUES('%s','%d')", t.Name, t.Pvp)
 
 	fmt.Println(query)
 	insert, err := db.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
-
-	//w.Write([]byte(medJSON))
 	defer insert.Close()
-	defer db.Close()
-
 }
 
 func UpdateMed(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-
 	nID := vars["id"]
 
 	// Read body
@@ -201,7 +192,6 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer insert.Close()
-	defer db.Close()
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +199,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	var query string = fmt.Sprintf("DELETE FROM `rds_pharmacy`.`med` WHERE (`id` = '%s')", nID)
+	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`med` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
 	insert, err := db.Query(query)
@@ -219,11 +209,10 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer insert.Close()
-	defer db.Close()
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	var users []*Users
+	var users []*User
 
 	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
 	if err != nil {
@@ -248,8 +237,8 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		user := Users{
-			Id:              id,
+		user := User{
+			ID:              id,
 			Name:            name,
 			MedBreackfast:   medBreackfast,
 			MedLaunch:       medLaunch,
@@ -266,20 +255,18 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	usersJSON, err := json.MarshalIndent(users, "", " ")
 
 	if err != nil {
-		// handle error
+		panic(err.Error())
 	}
 
 	w.Write([]byte(usersJSON))
-
-	defer db.Close()
 }
 
 //GetUser ...
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	nId := r.URL.Query().Get("id")
-	user := Users{}
+	nID := r.URL.Query().Get("id")
+	user := User{}
 
-	selDB, err := db.Query("SELECT * FROM users WHERE id=?", nId)
+	selDB, err := db.Query("SELECT * FROM users WHERE id=?", nID)
 
 	if err != nil {
 		panic(err.Error())
@@ -294,7 +281,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		user.Id = id
+		user.ID = id
 		user.Name = name
 		user.MedBreackfast = medBreackfast
 		user.MedLaunch = medLaunch
@@ -310,8 +297,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(userJSON))
-
-	defer db.Close()
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
