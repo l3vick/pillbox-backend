@@ -11,7 +11,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/l3vick/go-pharmacy/src/main/model/med"
+	"github.com/l3vick/go-pharmacy/src/model/med"
 )
 
 type Users struct {
