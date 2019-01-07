@@ -11,7 +11,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/l3vick/go-pharmacy/src/model/med"
 )
 
 type Users struct {
@@ -44,7 +43,7 @@ func conectDB() {
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 	conectDB()
-	var meds []*med.Med
+	var meds []*Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
