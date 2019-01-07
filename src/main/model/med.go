@@ -1,7 +1,7 @@
-package model
+package main
 
 type Med struct {
 	ID   int
-	Name string
-	Pvp  int
+	Name string `json:"name"`
+	Pvp  int    `json:"pvp"`
 }

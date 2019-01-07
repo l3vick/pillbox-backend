@@ -1,8 +1,8 @@
-package model
+package main
 
 type User struct {
-	ID               int
-	Name             string
+	ID              int
+	Name            string
 	MedBreackfast   int
 	MedLaunch       int
 	MedDinner       int

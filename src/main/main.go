@@ -3,20 +3,16 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/mux"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/src/main/model/med"
 )
-
-type Med struct {
-	ID   int
-	Name string
-	Pvp  int
-}
 
 type Users struct {
 	Id              int
@@ -48,14 +44,13 @@ func conectDB() {
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 	conectDB()
-	var meds []*Med
+	var meds []*med.Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
 	}
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
-	w.Header().Set("Content-Type", "application/json")
 
 	for selDB.Next() {
 		var id int
@@ -72,12 +67,13 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		}
 		meds = append(meds, &med)
 	}
-
-	medJSON, err := json.MarshalIndent(meds, "", " ")
+	output, err := json.Marshal(meds)
 	if err != nil {
-		// handle error
+		http.Error(w, err.Error(), 500)
+		return
 	}
-	w.Write([]byte(medJSON))
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
 	defer db.Close()
 }
 
@@ -106,19 +102,56 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		med.Pvp = pvp
 	}
 
-	medJSON, err := json.MarshalIndent(med, "", " ")
-	if err != nil {
-		// handle error
-	}
+	//medJSON, err := json.MarshalIndent(med, "", " ")
+	//if err != nil {
+	// handle error
+	//}
 
-	w.Write([]byte(medJSON))
+	//	w.Write([]byte(medJSON))
+
+	output, err := json.Marshal(med)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+
 	defer db.Close()
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
 	conectDB()
 
-	insert, err := db.Query("INSERT INTO `rds_pharmacy`.`users` (`id`, `name`, `med_breakfast`, `med_launch`, `med_dinner`, `alarm_breakfast`, `alarm_launch`, `alarm_dinner`) VALUES ('0', 'erere', '{4,2}', '{1,3}', '{112,312}', '09:10', '15:00', '21:00')")
+	// Read body
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// Unmarshal
+	var t Med
+	err = json.Unmarshal(b, &t)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	fmt.Println(t.Name)
+	output, err := json.Marshal(t)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+
+	var query string = fmt.Sprintf("INSERT INTO `rds_pharmacy`.`med` (`name`, `pvp`) VALUES('%s','%d')", t.Name, t.Pvp)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -127,6 +160,67 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	defer insert.Close()
 	defer db.Close()
 
+}
+
+func UpdateMed(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	// Read body
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// Unmarshal
+	var t Med
+	err = json.Unmarshal(b, &t)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	fmt.Println(t.Name)
+	output, err := json.Marshal(t)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`med` SET `name` = '%s', `pvp` = '%d' WHERE (`id` = '%s')", t.Name, t.Pvp, nID)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+	defer db.Close()
+}
+
+func DeleteMed(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	var query string = fmt.Sprintf("DELETE FROM `rds_pharmacy`.`med` WHERE (`id` = '%s')", nID)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+	defer db.Close()
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -181,6 +275,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 }
 
+//GetUser ...
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	nId := r.URL.Query().Get("id")
 	user := Users{}
@@ -234,16 +329,11 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
-
 	router.HandleFunc("/meds", GetMeds).Methods("GET")
-
-	router.HandleFunc("/med/{id}", GetMed).Methods("GET")
-	router.HandleFunc("/med", CreateMed).Methods("GET")
-
-	//router.HandleFunc("/meds", getmed).Methods("GET")
-	//router.HandleFunc("/meds/{id}", getMedById).Methods("GET")
-	//router.HandleFunc("/meds/{id}", CreateMed).Methods("POST")
-	//router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
+	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
+	router.HandleFunc("/meds", CreateMed).Methods("POST")
+	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
+	router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
 
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
