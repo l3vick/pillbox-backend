@@ -399,6 +399,26 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	defer insert.Close()
 }
 
+func GetPharmacies(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetPharmacy(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
 	conectDB()
 
