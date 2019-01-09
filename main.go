@@ -259,6 +259,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 //GetUser ...
 func GetUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	nID := r.URL.Query().Get("id")
 	user := User{}
 
@@ -340,6 +341,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
+
 	router.HandleFunc("/meds", GetMeds).Methods("GET")
 	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
 	router.HandleFunc("/meds", CreateMed).Methods("POST")
@@ -349,7 +351,14 @@ func main() {
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/users", CreateUser).Methods("POST")
+	router.HandleFunc("/users", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+
+	router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
+	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
+	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
+	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
 
 	http.Handle("/", router)
 
@@ -359,4 +368,8 @@ func main() {
 		panic(err)
 	}
 
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
