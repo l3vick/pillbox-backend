@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/l3vick/go-pharmacy/model"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,23 +12,14 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	_ "github.com/l3vick/go-pharmacy/model"
 )
 
-type User struct {
-	ID             int    `json:"id"`
-	Name           string `json:"name"`
-	MedBreakfast   string `json:"med_breakfast"`
-	MedLaunch      string `json:"med_launch"`
-	MedDinner      string `json:"med_dinner"`
-	AlarmBreakfast string `json:"alarm_breakfast"`
-	AlarmLaunch    string `json:"alarm_launch"`
-	AlarmDinner    string `json:"alarm_dinner"`
-	Password       string `json:"password"`
-	IDPharmacy     int    `json:"id_pharmacy"`
-}
-
 var db *sql.DB
+
+type UserLogin struct {
+	Phone    int    `json:"number_phone"`
+	Password string `json:"password"`
+}
 
 func root(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
@@ -49,7 +41,9 @@ func closeDB() {
 }
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
-	var meds []*Med
+	enableCors(&w)
+
+	var meds []*model.Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
@@ -65,7 +59,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		med := Med{
+		med := model.Med{
 			ID:   id,
 			Name: name,
 			Pvp:  pvp,
@@ -82,6 +76,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	vars := mux.Vars(r)
 
@@ -92,7 +87,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	med := Med{}
+	med := model.Med{}
 	for selDB.Next() {
 		var id, pvp int
 		var name string
@@ -115,6 +110,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -123,7 +119,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var med Med
+	var med model.Med
 	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -150,6 +146,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -161,7 +158,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var med Med
+	var med model.Med
 	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -189,6 +186,8 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -206,7 +205,9 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	var users []*User
+	enableCors(&w)
+
+	var users []*model.User
 
 	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
 	if err != nil {
@@ -224,7 +225,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		user := User{
+		user := model.User{
 			ID:             id,
 			Name:           name,
 			MedBreakfast:   medBreakfast,
@@ -250,10 +251,11 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(usersJSON))
 }
 
-//GetUser ...
 func GetUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
 	nID := r.URL.Query().Get("id")
-	user := User{}
+	user := model.User{}
 
 	selDB, err := db.Query("SELECT * FROM users WHERE id=?", nID)
 
@@ -291,6 +293,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -299,7 +302,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Unmarshal
-	var user User
+	var user model.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -323,16 +326,298 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer insert.Close()
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
+	vars := mux.Vars(r)
+	nID := vars["id"]
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var user model.User
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	output, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`users` SET `name` = '%s', `med_breakfast` = '%s', `med_launch` = '%s', `med_dinner` = '%s', `alarm_breakfast` = '%s', `alarm_launch` = '%s', `alarm_dinner` = '%s', `id_pharmacy` = '%d' WHERE (`id` = '%s')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmBreakfast, user.AlarmBreakfast, user.IDPharmacy, nID)
+
+	fmt.Println(query)
+	update, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer update.Close()
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`users` WHERE (`id` = '%s')", nID)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+func GetPharmacies(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	var pharmacies []*model.Pharmacy
+	selDB, err := db.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM med LIMIT 10")
+	if err != nil {
+		panic(err.Error())
+	}
+	message := r.URL.Path
+	message = strings.TrimPrefix(message, "/")
+
+	for selDB.Next() {
+		var id, numberPhone, guard int
+		var name, street, scheduler, cif string
+		err = selDB.Scan(&id, &name, &numberPhone, &guard, &street, &scheduler, &cif)
+		if err != nil {
+			panic(err.Error())
+		}
+		pharmacy := model.Pharmacy{
+			ID:   id,
+			Name: name,
+			NumberPhone:  numberPhone,
+			Guard:	guard,
+			Street:	street,
+			Schedule:	scheduler,
+			Cif:	cif,
+		}
+		pharmacies = append(pharmacies, &pharmacy)
+	}
+	output, err := json.Marshal(pharmacies)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
+}
+
+func GetPharmacy(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	selDB, err := db.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM pharmacy WHERE id=?", nID)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pharmacy := model.Pharmacy{}
+	for selDB.Next() {
+		var id, numberPhone, guard int
+		var name, street, scheduler, cif string
+		err = selDB.Scan(&id, &name, &numberPhone, &guard, &street, &scheduler, &cif)
+		if err != nil {
+			panic(err.Error())
+		}
+		pharmacy.ID = id
+		pharmacy.Name = name
+		pharmacy.NumberPhone = numberPhone
+		pharmacy.Guard = guard
+		pharmacy.Street = street
+		pharmacy.Schedule = scheduler
+		pharmacy.Cif = cif
+	}
+
+	output, err := json.Marshal(pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+}
+
+func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	// Read body
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	// Unmarshal
+	var pharmacy model.Pharmacy
+	err = json.Unmarshal(b, &pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	output, err := json.Marshal(pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `street`, `number_phone`, `schedule`, `guard`, `password`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insert.Close()
+}
+
+func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	vars := mux.Vars(r)
+	nID := vars["id"]
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var pharmacy model.Pharmacy
+	err = json.Unmarshal(b, &pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	output, err := json.Marshal(pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET `name` = '%s', `cif` = '%s, `street` = '%s', `schedule` = '%s', `password` = '%s', `phone_number` = '%d', `guard` = '%d' WHERE (`id` = '%s)", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.Schedule, pharmacy.Password, pharmacy.NumberPhone, pharmacy.Guard, nID)
+
+	fmt.Println(query)
+	update, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer update.Close()
+}
+
+func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`pharmacy` WHERE (`id` = '%s')", nID)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var user UserLogin
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	query := fmt.Sprintf("SELECT * FROM rds_pharmacy.pharmacy WHERE number_phone =  %d  and password = '%s'", user.Phone, user.Password)
+
+	fmt.Println(query)
+	selDB, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pharmacy := model.Pharmacy{}
+	for selDB.Next() {
+		var id, phoneNumber, guard int
+		var cif, street, schedule, name, password string
+		err = selDB.Scan(&id, &cif, &street, &phoneNumber, &schedule, &name, &guard, &password)
+
+		pharmacy.ID = id
+		pharmacy.Cif = cif
+		pharmacy.Street = street
+		pharmacy.NumberPhone = phoneNumber
+		pharmacy.Schedule = schedule
+		pharmacy.Name = name
+		pharmacy.Guard = guard
+		pharmacy.Password = password
+
+		if err != nil {
+			panic(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+	}
+
+	output, err := json.Marshal(pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+	defer selDB.Close()
 }
 
 func main() {
-
 	conectDB()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
+
 	router.HandleFunc("/meds", GetMeds).Methods("GET")
 	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
 	router.HandleFunc("/meds", CreateMed).Methods("POST")
@@ -342,7 +627,16 @@ func main() {
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/users", CreateUser).Methods("POST")
+	router.HandleFunc("/users", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+
+	router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
+	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
+	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
+	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
+
+	router.HandleFunc("/login", Login).Methods("POST")
 
 	http.Handle("/", router)
 
@@ -352,4 +646,10 @@ func main() {
 		panic(err)
 	}
 
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
