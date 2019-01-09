@@ -20,14 +20,16 @@ type Med struct {
 }
 
 type User struct {
-	ID              int
-	Name            string
-	MedBreackfast   int
-	MedLaunch       int
-	MedDinner       int
-	AlarmBreackfast string
-	AlarmLaunch     string
-	AlarmDinner     string
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	MedBreakfast   string `json:"med_breakfast"`
+	MedLaunch      string `json:"med_launch"`
+	MedDinner      string `json:"med_dinner"`
+	AlarmBreakfast string `json:"alarm_breakfast"`
+	AlarmLaunch    string `json:"alarm_launch"`
+	AlarmDinner    string `json:"alarm_dinner"`
+	Password       string `json:"password"`
+	IDPharmacy     int    `json:"id_pharmacy"`
 }
 
 var db *sql.DB
@@ -85,7 +87,6 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
-	conectDB()
 
 	vars := mux.Vars(r)
 
@@ -119,23 +120,23 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
-	// Read body
+
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	// Unmarshal
-	var t Med
-	err = json.Unmarshal(b, &t)
+
+	var med Med
+	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	fmt.Println(t.Name)
-	output, err := json.Marshal(t)
+	fmt.Println(med.Name)
+	output, err := json.Marshal(med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -143,7 +144,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
-	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`med` (`name`, `pvp`) VALUES('%s','%d')", t.Name, t.Pvp)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`med` (`name`, `pvp`) VALUES('%s','%d')", med.Name, med.Pvp)
 
 	fmt.Println(query)
 	insert, err := db.Query(query)
@@ -186,12 +187,12 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`med` SET `name` = '%s', `pvp` = '%d' WHERE (`id` = '%s')", t.Name, t.Pvp, nID)
 
 	fmt.Println(query)
-	insert, err := db.Query(query)
+	update, err := db.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	defer insert.Close()
+	defer update.Close()
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
@@ -222,30 +223,25 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	for selDB.Next() {
-		var id int
-		var name string
-		var medBreackfast int
-		var medLaunch int
-		var medDinner int
-		var alarmBreackfast string
-		var alarmLaunch string
-		var alarmDinner string
-
-		err = selDB.Scan(&id, &name, &medBreackfast, &medLaunch, &medDinner, &alarmBreackfast, &alarmLaunch, &alarmDinner)
+		var id, idPharmacy int
+		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password string
+		err = selDB.Scan(&id, &name, &medBreakfast, &medLaunch, &medDinner, &alarmBreakfast, &alarmLaunch, &alarmDinner, &password, &idPharmacy)
 
 		if err != nil {
 			panic(err.Error())
 		}
 
 		user := User{
-			ID:              id,
-			Name:            name,
-			MedBreackfast:   medBreackfast,
-			MedLaunch:       medLaunch,
-			MedDinner:       medDinner,
-			AlarmBreackfast: alarmBreackfast,
-			AlarmLaunch:     alarmLaunch,
-			AlarmDinner:     alarmDinner,
+			ID:             id,
+			Name:           name,
+			MedBreakfast:   medBreakfast,
+			MedLaunch:      medLaunch,
+			MedDinner:      medDinner,
+			AlarmBreakfast: alarmBreakfast,
+			AlarmLaunch:    alarmLaunch,
+			AlarmDinner:    alarmDinner,
+			Password:       password,
+			IDPharmacy:     idPharmacy,
 		}
 
 		users = append(users, &user)
@@ -273,9 +269,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id, medBreackfast, medLaunch, medDinner int
-		var name, alarmBreackfast, alarmLaunch, alarmDinner string
-		err = selDB.Scan(&id, &name, &medBreackfast, &medDinner, &medLaunch, &alarmDinner, &alarmLaunch, &alarmBreackfast)
+		var id, idPharmacy int
+		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password string
+		err = selDB.Scan(&id, &name, &medBreakfast, &medDinner, &medLaunch, &alarmDinner, &alarmLaunch, &alarmBreakfast, &password, &idPharmacy)
 
 		if err != nil {
 			panic(err.Error())
@@ -283,12 +279,14 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 		user.ID = id
 		user.Name = name
-		user.MedBreackfast = medBreackfast
+		user.MedBreakfast = medBreakfast
 		user.MedLaunch = medLaunch
 		user.MedDinner = medDinner
-		user.AlarmBreackfast = alarmBreackfast
+		user.AlarmBreakfast = alarmBreakfast
 		user.AlarmLaunch = alarmLaunch
 		user.AlarmDinner = alarmDinner
+		user.IDPharmacy = idPharmacy
+		user.Password = password
 	}
 
 	userJSON, err := json.MarshalIndent(user, "", " ")
@@ -300,7 +298,36 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	// Read body
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	// Unmarshal
+	var user User
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
+	output, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`users` (`name`, `med_breakfast`, `med_launch`, `med_dinner`, `alarm_breakfast`, `alarm_launch`, `alarm_dinner`, `password`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmLaunch, user.AlarmDinner, user.Password, user.IDPharmacy)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insert.Close()
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -321,7 +348,7 @@ func main() {
 
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
-	router.HandleFunc("/users/{id}", CreateUser).Methods("POST")
+	router.HandleFunc("/users", CreateUser).Methods("POST")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
 	http.Handle("/", router)
