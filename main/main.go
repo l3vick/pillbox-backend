@@ -26,6 +26,12 @@ type User struct {
 	IDPharmacy     int    `json:"id_pharmacy"`
 }
 
+type Med struct {
+	ID   int
+	Name string `json:"name"`
+	Pvp  int    `json:"pvp"`
+}
+
 var db *sql.DB
 
 func root(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +53,7 @@ func closeDB() {
 	defer db.Close()
 }
 
-/*func GetMeds(w http.ResponseWriter, r *http.Request) {
+func GetMeds(w http.ResponseWriter, r *http.Request) {
 	var meds []*Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
@@ -185,7 +191,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer update.Close()
-}*/
+}
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
