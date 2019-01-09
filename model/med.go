@@ -1,4 +1,4 @@
-package main
+package model
 
 //Med ...
 type Med struct {
