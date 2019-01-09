@@ -11,7 +11,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	_ "github.com/l3vick/go-pharmacy/model"
 )
 
 type User struct {
@@ -48,7 +47,7 @@ func closeDB() {
 	defer db.Close()
 }
 
-func GetMeds(w http.ResponseWriter, r *http.Request) {
+/*func GetMeds(w http.ResponseWriter, r *http.Request) {
 	var meds []*Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
@@ -186,7 +185,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer update.Close()
-}
+}*/
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -207,6 +206,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []*User
+	enableCors(&w)
 
 	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
 	if err != nil {
@@ -252,7 +252,6 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 //GetUser ...
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 	nID := r.URL.Query().Get("id")
 	user := User{}
 
@@ -324,8 +323,60 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer insert.Close()
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
+	vars := mux.Vars(r)
+	nID := vars["id"]
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var user User
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	output, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`users` SET `name` = '%s', `med_breakfast` = '%s', `med_launch` = '%s', `med_dinner` = '%s', `alarm_breakfast` = '%s', `alarm_launch` = '%s', `alarm_dinner` = '%s', `id_pharmacy` = '%d' WHERE (`id` = '%s')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmBreakfast, user.AlarmBreakfast, user.IDPharmacy, nID)
+
+	fmt.Println(query)
+	update, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer update.Close()
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`users` WHERE (`id` = '%s')", nID)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+
+	defer insert.Close()
 }
 
 func main() {
@@ -335,10 +386,10 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
 
-	router.HandleFunc("/meds", GetMeds).Methods("GET")
+	/*router.HandleFunc("/meds", GetMeds).Methods("GET")
 	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
 	router.HandleFunc("/meds", CreateMed).Methods("POST")
-	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
+	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")*/
 	router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
 
 	router.HandleFunc("/users", GetUsers).Methods("GET")
@@ -347,11 +398,11 @@ func main() {
 	router.HandleFunc("/users", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
-	router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	/*router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
 	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
-	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
-	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
-	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
+	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")*/
+	//router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
+	//router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
 
 	http.Handle("/", router)
 
@@ -365,4 +416,10 @@ func main() {
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+
+	//header.Add("Access-Control-Allow-Origin", "*")
+	//header.Add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+	//header.Add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
