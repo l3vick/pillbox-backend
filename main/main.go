@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/l3vick/go-pharmacy/model"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,42 +14,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type User struct {
-	ID             int    `json:"id"`
-	Name           string `json:"name"`
-	MedBreakfast   string `json:"med_breakfast"`
-	MedLaunch      string `json:"med_launch"`
-	MedDinner      string `json:"med_dinner"`
-	AlarmBreakfast string `json:"alarm_breakfast"`
-	AlarmLaunch    string `json:"alarm_launch"`
-	AlarmDinner    string `json:"alarm_dinner"`
-	Password       string `json:"password"`
-	IDPharmacy     int    `json:"id_pharmacy"`
-}
-
-type Pharmacy struct {
-	ID          int    `json:"id"`
-	Cif         string `json:"cif"`
-	Street      string `json:"street"`
-	PhoneNumber int    `json:"number_phone"`
-	Schedule    string `json:"schedule"`
-	Name        string `json:"name"`
-	Guard       int    `json:"guard"`
-	Password    string `json:"password"`
-}
-
-type Med struct {
-	ID   int	`json:"id"`
-	Name string `json:"name"`
-	Pvp  int    `json:"pvp"`
-}
+var db *sql.DB
 
 type UserLogin struct {
 	Phone    int    `json:"number_phone"`
 	Password string `json:"password"`
 }
-
-var db *sql.DB
 
 func root(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
@@ -72,7 +43,7 @@ func closeDB() {
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
-	var meds []*Med
+	var meds []*model.Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
@@ -88,7 +59,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		med := Med{
+		med := model.Med{
 			ID:   id,
 			Name: name,
 			Pvp:  pvp,
@@ -116,7 +87,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	med := Med{}
+	med := model.Med{}
 	for selDB.Next() {
 		var id, pvp int
 		var name string
@@ -148,7 +119,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var med Med
+	var med model.Med
 	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -187,7 +158,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var med Med
+	var med model.Med
 	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -236,7 +207,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
-	var users []*User
+	var users []*model.User
 
 	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
 	if err != nil {
@@ -254,7 +225,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		user := User{
+		user := model.User{
 			ID:             id,
 			Name:           name,
 			MedBreakfast:   medBreakfast,
@@ -284,7 +255,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	nID := r.URL.Query().Get("id")
-	user := User{}
+	user := model.User{}
 
 	selDB, err := db.Query("SELECT * FROM users WHERE id=?", nID)
 
@@ -331,7 +302,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Unmarshal
-	var user User
+	var user model.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -368,7 +339,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user User
+	var user model.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -417,7 +388,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
-	var pharmacies []*Pharmacy
+	var pharmacies []*model.Pharmacy
 	selDB, err := db.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM med LIMIT 10")
 	if err != nil {
 		panic(err.Error())
@@ -432,10 +403,10 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		pharmacy := Pharmacy{
+		pharmacy := model.Pharmacy{
 			ID:   id,
 			Name: name,
-			PhoneNumber:  numberPhone,
+			NumberPhone:  numberPhone,
 			Guard:	guard,
 			Street:	street,
 			Schedule:	scheduler,
@@ -464,7 +435,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := Pharmacy{}
+	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
 		var id, numberPhone, guard int
 		var name, street, scheduler, cif string
@@ -474,7 +445,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		}
 		pharmacy.ID = id
 		pharmacy.Name = name
-		pharmacy.PhoneNumber = numberPhone
+		pharmacy.NumberPhone = numberPhone
 		pharmacy.Guard = guard
 		pharmacy.Street = street
 		pharmacy.Schedule = scheduler
@@ -500,7 +471,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Unmarshal
-	var pharmacy Pharmacy
+	var pharmacy model.Pharmacy
 	err = json.Unmarshal(b, &pharmacy)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -514,7 +485,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
-	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `street`, `number_phone`, `schedule`, `guard`, `password`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.PhoneNumber, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `street`, `number_phone`, `schedule`, `guard`, `password`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password)
 
 	fmt.Println(query)
 	insert, err := db.Query(query)
@@ -537,7 +508,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var pharmacy Pharmacy
+	var pharmacy model.Pharmacy
 	err = json.Unmarshal(b, &pharmacy)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -553,7 +524,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET `name` = '%s', `cif` = '%s, `street` = '%s', `schedule` = '%s', `password` = '%s', `phone_number` = '%d', `guard` = '%d' WHERE (`id` = '%s)", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.Schedule, pharmacy.Password, pharmacy.PhoneNumber, pharmacy.Guard, nID)
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET `name` = '%s', `cif` = '%s, `street` = '%s', `schedule` = '%s', `password` = '%s', `phone_number` = '%d', `guard` = '%d' WHERE (`id` = '%s)", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.Schedule, pharmacy.Password, pharmacy.NumberPhone, pharmacy.Guard, nID)
 
 	fmt.Println(query)
 	update, err := db.Query(query)
@@ -608,7 +579,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := Pharmacy{}
+	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
 		var id, phoneNumber, guard int
 		var cif, street, schedule, name, password string
@@ -617,7 +588,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		pharmacy.ID = id
 		pharmacy.Cif = cif
 		pharmacy.Street = street
-		pharmacy.PhoneNumber = phoneNumber
+		pharmacy.NumberPhone = phoneNumber
 		pharmacy.Schedule = schedule
 		pharmacy.Name = name
 		pharmacy.Guard = guard
