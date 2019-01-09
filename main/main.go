@@ -399,6 +399,25 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	defer insert.Close()
 }
 
+func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`pharmacy` WHERE (`id` = '%s')", nID)
+
+	fmt.Println(query)
+	insert, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
 func main() {
 	conectDB()
 
@@ -417,10 +436,10 @@ func main() {
 	router.HandleFunc("/users", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
-	router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	/*router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
 	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
 	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
-	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
+	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")*/
 	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
 
 	http.Handle("/", router)
