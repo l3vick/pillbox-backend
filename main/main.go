@@ -54,6 +54,8 @@ func closeDB() {
 }
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
 	var meds []*Med
 	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
 	if err != nil {
@@ -87,6 +89,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	vars := mux.Vars(r)
 
@@ -120,6 +123,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -155,6 +159,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -194,6 +199,8 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -211,8 +218,9 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	var users []*User
 	enableCors(&w)
+
+	var users []*User
 
 	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
 	if err != nil {
@@ -258,6 +266,8 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 //GetUser ...
 func GetUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
 	nID := r.URL.Query().Get("id")
 	user := User{}
 
@@ -297,6 +307,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -330,6 +341,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -369,6 +381,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -386,16 +400,15 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	conectDB()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
 
-	/*router.HandleFunc("/meds", GetMeds).Methods("GET")
+	router.HandleFunc("/meds", GetMeds).Methods("GET")
 	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
 	router.HandleFunc("/meds", CreateMed).Methods("POST")
-	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")*/
+	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
 	router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
 
 	router.HandleFunc("/users", GetUsers).Methods("GET")
@@ -404,11 +417,11 @@ func main() {
 	router.HandleFunc("/users", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
-	/*router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
 	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
-	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")*/
-	//router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
-	//router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
+	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
+	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
+	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
 
 	http.Handle("/", router)
 
@@ -424,8 +437,4 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
-
-	//header.Add("Access-Control-Allow-Origin", "*")
-	//header.Add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-	//header.Add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
