@@ -26,10 +26,26 @@ type User struct {
 	IDPharmacy     int    `json:"id_pharmacy"`
 }
 
+type Pharmacy struct {
+	ID          int    `json:"id"`
+	Cif         string `json:"cif"`
+	Street      string `json:"street"`
+	PhoneNumber int    `json:"number_phone"`
+	Schedule    string `json:"schedule"`
+	Name        string `json:"name"`
+	Guard       int    `json:"guard"`
+	Password    string `json:"password"`
+}
+
 type Med struct {
 	ID   int
 	Name string `json:"name"`
 	Pvp  int    `json:"pvp"`
+}
+
+type UserLogin struct {
+	Phone    int    `json:"number_phone"`
+	Password string `json:"password"`
 }
 
 var db *sql.DB
@@ -381,7 +397,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 
@@ -419,6 +434,64 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func Login(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var user UserLogin
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	query := fmt.Sprintf("SELECT * FROM rds_pharmacy.pharmacy WHERE number_phone =  %d  and password = '%s'", user.Phone, user.Password)
+
+	fmt.Println(query)
+	selDB, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pharmacy := Pharmacy{}
+	for selDB.Next() {
+		var id, phoneNumber, guard int
+		var cif, street, schedule, name, password string
+		err = selDB.Scan(&id, &cif, &street, &phoneNumber, &schedule, &name, &guard, &password)
+
+		pharmacy.ID = id
+		pharmacy.Cif = cif
+		pharmacy.Street = street
+		pharmacy.PhoneNumber = phoneNumber
+		pharmacy.Schedule = schedule
+		pharmacy.Name = name
+		pharmacy.Guard = guard
+		pharmacy.Password = password
+
+		if err != nil {
+			panic(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+	}
+
+	output, err := json.Marshal(pharmacy)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(output)
+	defer selDB.Close()
+}
+
 func main() {
 	conectDB()
 
@@ -442,6 +515,8 @@ func main() {
 	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
 	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
 	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
+
+	router.HandleFunc("/login", Login).Methods("POST")
 
 	http.Handle("/", router)
 
