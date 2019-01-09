@@ -11,13 +11,8 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	_ "github.com/l3vick/go-pharmacy/model"
 )
-
-type Med struct {
-	ID   int
-	Name string `json:"name"`
-	Pvp  int    `json:"pvp"`
-}
 
 type User struct {
 	ID             int    `json:"id"`
@@ -159,7 +154,6 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -167,24 +161,23 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Unmarshal
-	var t Med
-	err = json.Unmarshal(b, &t)
+	var med Med
+	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	fmt.Println(t.Name)
-	output, err := json.Marshal(t)
+	output, err := json.Marshal(med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
 	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`med` SET `name` = '%s', `pvp` = '%d' WHERE (`id` = '%s')", t.Name, t.Pvp, nID)
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`med` SET `name` = '%s', `pvp` = '%d' WHERE (`id` = '%s')", med.Name, med.Pvp, nID)
 
 	fmt.Println(query)
 	update, err := db.Query(query)
