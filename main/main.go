@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -43,11 +44,102 @@ func closeDB() {
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
-	vars := mux.Vars(r)
-	page := vars["page"]
+	pageNumber := r.URL.Query().Get("page")
+
+	intPage, err := strconv.Atoi(pageNumber)
+
+	elementsPage := intPage * 10
+
+	elem := strconv.Itoa(elementsPage) 
+
+	query := fmt.Sprintf("SELECT id, name, pvp, (SELECT COUNT(*)  from rds_pharmacy.med) as count FROM med LIMIT " + elem + ",10")
+
+	fmt.Println(query)
 
 	var meds []*model.Med
-	selDB, err := db.Query("SELECT * FROM med LIMIT" + page + ",10")
+
+	var page model.Page
+
+	selDB, err := db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for selDB.Next() {
+		var id int
+		var name string
+		var pvp int
+		var count int
+		err = selDB.Scan(&id, &name, &pvp, &count)
+		if err != nil {
+			panic(err.Error())
+		}
+		med := model.Med{
+			ID:   id,
+			Name: name,
+			Pvp:  pvp,
+		}
+		meds = append(meds, &med)
+
+		if intPage == 0 {
+			page.First = 0
+			page.Previous = 0
+			page.Next = intPage+1
+			page.Last = (count/10)-1
+			page.Count = count
+		} else if intPage == (count/10)-1 {
+			page.First = 0
+			page.Previous = intPage -1
+			page.Next = intPage
+			page.Last = (count/10)-1
+			page.Count = count
+		} else {
+			page.First = 0
+			page.Previous = intPage-1
+			page.Next = intPage+1
+			page.Last = (count/10)-1
+			page.Count = count
+		}
+
+	}
+	response := model.MedResponse{
+		Meds: meds,
+		Page: page,
+	}
+	output, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+
+	w.Header().Set("Content-Type", "application/json")
+	
+	w.Write(output)
+	
+}
+
+/*
+func GetMeds(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	pageNumber := r.URL.Query().Get("page")
+
+	intPage, err := strconv.Atoi(pageNumber)
+
+	elementsPage := intPage * 10
+
+	elem := strconv.Itoa(elementsPage) 
+
+	query := fmt.Sprintf("SELECT id, name, pvp, (SELECT COUNT(*)  from rds_pharmacy.med) as count FROM med LIMIT " + elem + ",10")
+
+	fmt.Println(query)
+
+	var meds []*model.Med
+
+	var page *model.Page
+
+	selDB, err := db.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -58,7 +150,8 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		var id int
 		var name string
 		var pvp int
-		err = selDB.Scan(&id, &name, &pvp)
+		var count int
+		err = selDB.Scan(&id, &name, &pvp, &count)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -68,15 +161,33 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 			Pvp:  pvp,
 		}
 		meds = append(meds, &med)
+
+		page.First = 0
+		page.Previous = intPage -1
+		page.Next = intPage+1
+		page.Last = count / 10
+		page.Count = count
 	}
 	output, err := json.Marshal(meds)
+	
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
+	outputPage, err := json.Marshal(page)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(output)
+	
 }
+
+*/
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
@@ -204,6 +315,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 
 	defer insert.Close()
 }
+
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
@@ -622,7 +734,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
 
-	router.HandleFunc("/meds/{page}", GetMeds).Methods("GET")
+	router.HandleFunc("/meds", GetMeds).Methods("GET")
 	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
 	router.HandleFunc("/meds", CreateMed).Methods("POST")
 	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
