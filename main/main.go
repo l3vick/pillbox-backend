@@ -43,8 +43,11 @@ func closeDB() {
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
+	vars := mux.Vars(r)
+	page := vars["page"]
+
 	var meds []*model.Med
-	selDB, err := db.Query("SELECT * FROM med LIMIT 10")
+	selDB, err := db.Query("SELECT * FROM med LIMIT" + page + ",10")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -79,7 +82,6 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	vars := mux.Vars(r)
-
 	nID := vars["id"]
 
 	selDB, err := db.Query("SELECT * FROM med WHERE id=?", nID)
@@ -189,7 +191,6 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	vars := mux.Vars(r)
-
 	nID := vars["id"]
 
 	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`med` WHERE (`id` = '%s')", nID)
@@ -207,9 +208,12 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
+	vars := mux.Vars(r)
+	page := vars["page"]
+
 	var users []*model.User
 
-	selDB, err := db.Query("SELECT * FROM users LIMIT 10")
+	selDB, err := db.Query("SELECT * FROM users LIMIT" + page + ",10")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -370,7 +374,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	vars := mux.Vars(r)
-
 	nID := vars["id"]
 
 	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`users` WHERE (`id` = '%s')", nID)
@@ -388,8 +391,11 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
+	vars := mux.Vars(r)
+	page := vars["page"]
+
 	var pharmacies []*model.Pharmacy
-	selDB, err := db.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM med LIMIT 10")
+	selDB, err := db.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM med LIMIT" + page + ",10")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -427,7 +433,6 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	vars := mux.Vars(r)
-
 	nID := vars["id"]
 
 	selDB, err := db.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM pharmacy WHERE id=?", nID)
@@ -539,7 +544,6 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	vars := mux.Vars(r)
-
 	nID := vars["id"]
 
 	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`pharmacy` WHERE (`id` = '%s')", nID)
@@ -618,22 +622,22 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", root).Methods("GET")
 
-	router.HandleFunc("/meds", GetMeds).Methods("GET")
+	router.HandleFunc("/meds/{page}", GetMeds).Methods("GET")
 	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
 	router.HandleFunc("/meds", CreateMed).Methods("POST")
 	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
 	router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
 
-	router.HandleFunc("/users", GetUsers).Methods("GET")
+	router.HandleFunc("/users/{page}", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	router.HandleFunc("/users", CreateUser).Methods("POST")
-	router.HandleFunc("/users", UpdateUser).Methods("PUT")
+	router.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
-	router.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	router.HandleFunc("/pharmacies/{page}", GetPharmacies).Methods("GET")
 	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
 	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
-	router.HandleFunc("/pharmacies", UpdatePharmacy).Methods("PUT")
+	router.HandleFunc("/pharmacies/{id}", UpdatePharmacy).Methods("PUT")
 	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
 
 	router.HandleFunc("/login", Login).Methods("POST")
