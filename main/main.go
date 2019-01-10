@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	_ "errors"
 	"fmt"
 	"github.com/l3vick/go-pharmacy/model"
 	"io/ioutil"
