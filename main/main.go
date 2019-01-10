@@ -112,83 +112,8 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
-
-	w.Header().Set("Content-Type", "application/json")
-	
-	w.Write(output)
-	
+	w.Write(output)	
 }
-
-/*
-func GetMeds(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-
-	pageNumber := r.URL.Query().Get("page")
-
-	intPage, err := strconv.Atoi(pageNumber)
-
-	elementsPage := intPage * 10
-
-	elem := strconv.Itoa(elementsPage) 
-
-	query := fmt.Sprintf("SELECT id, name, pvp, (SELECT COUNT(*)  from rds_pharmacy.med) as count FROM med LIMIT " + elem + ",10")
-
-	fmt.Println(query)
-
-	var meds []*model.Med
-
-	var page *model.Page
-
-	selDB, err := db.Query(query)
-	if err != nil {
-		panic(err.Error())
-	}
-	message := r.URL.Path
-	message = strings.TrimPrefix(message, "/")
-
-	for selDB.Next() {
-		var id int
-		var name string
-		var pvp int
-		var count int
-		err = selDB.Scan(&id, &name, &pvp, &count)
-		if err != nil {
-			panic(err.Error())
-		}
-		med := model.Med{
-			ID:   id,
-			Name: name,
-			Pvp:  pvp,
-		}
-		meds = append(meds, &med)
-
-		page.First = 0
-		page.Previous = intPage -1
-		page.Next = intPage+1
-		page.Last = count / 10
-		page.Count = count
-	}
-	output, err := json.Marshal(meds)
-	
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	outputPage, err := json.Marshal(page)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(output)
-	
-}
-
-*/
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
@@ -219,7 +144,6 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 }
 
@@ -246,7 +170,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("content-type", "application/json")
+
 	w.Write(output)
 
 	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`med` (`name`, `pvp`) VALUES('%s','%d')", med.Name, med.Pvp)
@@ -285,7 +209,6 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
 	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`med` SET `name` = '%s', `pvp` = '%d' WHERE (`id` = '%s')", med.Name, med.Pvp, nID)
@@ -330,8 +253,6 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 
 	for selDB.Next() {
 		var id, idPharmacy int
@@ -431,8 +352,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("content-type", "application/json")
+
 	w.Write(output)
+
 	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`users` (`name`, `med_breakfast`, `med_launch`, `med_dinner`, `alarm_breakfast`, `alarm_launch`, `alarm_dinner`, `password`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmLaunch, user.AlarmDinner, user.Password, user.IDPharmacy)
 
 	fmt.Println(query)
@@ -469,7 +391,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
 	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`users` SET `name` = '%s', `med_breakfast` = '%s', `med_launch` = '%s', `med_dinner` = '%s', `alarm_breakfast` = '%s', `alarm_launch` = '%s', `alarm_dinner` = '%s', `id_pharmacy` = '%d' WHERE (`id` = '%s')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmBreakfast, user.AlarmBreakfast, user.IDPharmacy, nID)
@@ -538,7 +459,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	
 	w.Write(output)
 }
 
@@ -575,7 +496,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("content-type", "application/json")
+	
 	w.Write(output)
 }
 
@@ -601,7 +522,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("content-type", "application/json")
+	
 	w.Write(output)
 	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `street`, `number_phone`, `schedule`, `guard`, `password`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password)
 
@@ -639,7 +560,6 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
 	w.Write(output)
 
 	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET `name` = '%s', `cif` = '%s, `street` = '%s', `schedule` = '%s', `password` = '%s', `phone_number` = '%d', `guard` = '%d' WHERE (`id` = '%s)", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.Schedule, pharmacy.Password, pharmacy.NumberPhone, pharmacy.Guard, nID)
@@ -724,7 +644,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("content-type", "application/json")
+
 	w.Write(output)
 	defer selDB.Close()
 }
