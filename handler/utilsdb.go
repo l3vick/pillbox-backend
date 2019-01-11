@@ -36,8 +36,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
 		var id, phoneNumber, guard int
-		var cif, street, schedule, name, password string
-		err = selDB.Scan(&id, &cif, &street, &phoneNumber, &schedule, &name, &guard, &password)
+		var cif, street, schedule, name, password, mail string
+		err = selDB.Scan(&id, &cif, &street, &phoneNumber, &schedule, &name, &guard, &password, &mail)
 
 		pharmacy.ID = id
 		pharmacy.Cif = cif
@@ -47,6 +47,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		pharmacy.Name = name
 		pharmacy.Guard = guard
 		pharmacy.Password = password
+		pharmacy.Mail = mail
+
 
 		if err != nil {
 			panic(err.Error())

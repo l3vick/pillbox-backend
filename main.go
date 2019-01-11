@@ -40,7 +40,7 @@ func main() {
 	r.HandleFunc("/users/{id}", handler.DeleteUser).Methods("DELETE")
 
 	r.HandleFunc("/pharmacies", handler.GetPharmacies).Methods("GET")
-	//r.HandleFunc("/pharmacies/{id}/users", GetUsersByPharmacyID).Methods("GET")
+	r.HandleFunc("/pharmacies/{id}/users", handler.GetUsersByPharmacyID).Methods("GET")
 	r.HandleFunc("/pharmacies/{id}", handler.GetPharmacy).Methods("GET")
 	r.HandleFunc("/pharmacies", handler.CreatePharmacy).Methods("POST")
 	r.HandleFunc("/pharmacies/{id}", handler.UpdatePharmacy).Methods("PUT")

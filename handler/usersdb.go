@@ -105,6 +105,107 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)	
 }
 
+func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+
+	pageNumber := r.URL.Query().Get("page")
+
+	intPage, err := strconv.Atoi(pageNumber)
+
+	elementsPage := intPage * 10
+
+	elem := strconv.Itoa(elementsPage)
+
+	query := fmt.Sprintf("SELECT id, name, surname, surname_last, med_breakfast, med_launch, med_dinner, alarm_breakfast, alarm_launch, alarm_dinner, password, age, address, phone, gender, mail, id_pharmacy, (SELECT COUNT(*)  from rds_pharmacy.users where id_pharmacy = " + nID + ") FROM rds_pharmacy.users where id_pharmacy = " + nID + " limit " + elem + ", 10")
+
+	fmt.Println(query)
+
+	var users []*model.User
+
+	var page model.Page
+
+	selDB, err := dbConnector.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for selDB.Next() {
+		var id, age, phone, id_pharmacy, count int
+		var name, surname, surname_last, med_breakfast, med_launch, med_dinner, alarm_breakfast, alarm_launch, alarm_dinner, password, address, gender, mail string
+		err = selDB.Scan(&id, &name, &surname, &surname_last, &med_breakfast, &med_launch, &med_dinner, &alarm_breakfast, &alarm_launch, &alarm_dinner, &password, &age, &address, &phone, &gender, &mail, &id_pharmacy, &count )
+		if err != nil {
+			panic(err.Error())
+		}
+
+		user := model.User{
+			ID:             id,
+			Name:           name,
+			Surname: 		surname,
+			SurnameLast: 	surname_last,
+			MedBreakfast:   med_breakfast,
+			MedLaunch:      med_launch,
+			MedDinner:      med_dinner,
+			AlarmBreakfast: alarm_breakfast,
+			AlarmLaunch:    alarm_launch,
+			AlarmDinner:    alarm_dinner,
+			Password:		password,
+			Age:			age,
+			Address:		address,
+			Phone:			phone,
+			Gender:			gender,
+			Mail:			mail,
+			IDPharmacy: 	id_pharmacy,
+		}
+
+		users = append(users, &user)
+
+
+
+		var index int
+		if (count % 10 == 0){
+			index = 1
+		}else{
+			index = 0
+		}
+		if intPage == 0 {
+			page.First = 0
+			page.Previous = 0
+			page.Next = intPage+1
+			page.Last = (count/10) - index
+			page.Count = count
+		} else if intPage == (count/10) - index {
+			page.First = 0
+			page.Previous = intPage -1
+			page.Next = intPage
+			page.Last = (count/10) - index
+			page.Count = count
+		} else {
+			page.First = 0
+			page.Previous = intPage-1
+			page.Next = intPage+1
+			page.Last = (count/10) - index
+			page.Count = count
+		}
+
+	}
+
+	response := model.UserResponse{
+		Users: users,
+		Page: page,
+	}
+
+	output, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Write(output)
+}
+
 func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	nID := r.URL.Query().Get("id")
