@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/l3vick/go-pharmacy/model"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"strconv"
@@ -17,11 +16,6 @@ import (
 )
 
 var db *sql.DB
-
-type UserLogin struct {
-	Phone    int    `json:"number_phone"`
-	Password string `json:"password"`
-}
 
 func root(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
@@ -43,7 +37,6 @@ func closeDB() {
 }
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	pageNumber := r.URL.Query().Get("page")
 
@@ -82,23 +75,29 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		}
 		meds = append(meds, &med)
 
+		var index int
+		if (count % 10 == 0){
+			index = 1
+		}else{
+			index = 0
+		}
 		if intPage == 0 {
 			page.First = 0
 			page.Previous = 0
 			page.Next = intPage+1
-			page.Last = (count/10)-1
+			page.Last = (count/10) - index
 			page.Count = count
-		} else if intPage == (count/10)-1 {
+		} else if intPage == (count/10) - index {
 			page.First = 0
 			page.Previous = intPage -1
 			page.Next = intPage
-			page.Last = (count/10)-1
+			page.Last = (count/10) - index
 			page.Count = count
 		} else {
 			page.First = 0
 			page.Previous = intPage-1
 			page.Next = intPage+1
-			page.Last = (count/10)-1
+			page.Last = (count/10) - index
 			page.Count = count
 		}
 
@@ -116,7 +115,6 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -148,7 +146,6 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -184,7 +181,6 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateMed(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -223,7 +219,6 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -242,22 +237,33 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
-	vars := mux.Vars(r)
-	page := vars["page"]
+	pageNumber := r.URL.Query().Get("page")
+
+	intPage, err := strconv.Atoi(pageNumber)
+
+	elementsPage := intPage * 10
+
+	elem := strconv.Itoa(elementsPage) 
+
+	query := fmt.Sprintf("SELECT id, name, med_breakfast, med_launch, med_dinner, alarm_breakfast, alarm_launch, alarm_dinner, id_pharmacy, (SELECT COUNT(*)  from rds_pharmacy.users) as count FROM users LIMIT " + elem + ",10 ")
+
+	fmt.Println(query)
 
 	var users []*model.User
 
-	selDB, err := db.Query("SELECT * FROM users LIMIT" + page + ",10")
+	var page model.Page
+
+	selDB, err := db.Query(query)
+
 	if err != nil {
 		panic(err.Error())
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy int
+		var id, idPharmacy, count int
 		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password string
-		err = selDB.Scan(&id, &name, &medBreakfast, &medLaunch, &medDinner, &alarmBreakfast, &alarmLaunch, &alarmDinner, &password, &idPharmacy)
+		err = selDB.Scan(&id, &name, &medBreakfast, &medLaunch, &medDinner, &alarmBreakfast, &alarmLaunch, &alarmDinner, &idPharmacy, &count)
 
 		if err != nil {
 			panic(err.Error())
@@ -278,19 +284,46 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 		users = append(users, &user)
 
+		var index int
+		if (count % 10 == 0){
+			index = 1
+		}else{
+			index = 0
+		}
+		if intPage == 0 {
+			page.First = 0
+			page.Previous = 0
+			page.Next = intPage+1
+			page.Last = (count/10) - index
+			page.Count = count
+		} else if intPage == (count/10) - index {
+			page.First = 0
+			page.Previous = intPage -1
+			page.Next = intPage
+			page.Last = (count/10) - index
+			page.Count = count
+		} else {
+			page.First = 0
+			page.Previous = intPage-1
+			page.Next = intPage+1
+			page.Last = (count/10) - index
+			page.Count = count
+		}
+
 	}
-
-	usersJSON, err := json.MarshalIndent(users, "", " ")
-
+	response := model.UserResponse{
+		Users: users,
+		Page: page,
+	}
+	output, err := json.Marshal(response)
 	if err != nil {
-		panic(err.Error())
+		http.Error(w, err.Error(), 500)
+		return
 	}
-
-	w.Write([]byte(usersJSON))
+	w.Write(output)	
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	nID := r.URL.Query().Get("id")
 	user := model.User{}
@@ -331,15 +364,14 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	// Read body
+	
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	// Unmarshal
+	
 	var user model.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
@@ -366,7 +398,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -405,7 +436,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -423,7 +453,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	page := vars["page"]
@@ -464,7 +493,6 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPharmacy(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -501,8 +529,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	// Read body
+
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -535,7 +562,6 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -574,7 +600,6 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	vars := mux.Vars(r)
 	nID := vars["id"]
@@ -592,7 +617,6 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -601,7 +625,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user UserLogin
+	var user model.UserLogin
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -652,32 +676,31 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func main() {
 	conectDB()
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", root).Methods("GET")
+	r := mux.NewRouter()
+	r.HandleFunc("/", root).Methods("GET")
 
-	router.HandleFunc("/meds", GetMeds).Methods("GET")
-	router.HandleFunc("/meds/{id}", GetMed).Methods("GET")
-	router.HandleFunc("/meds", CreateMed).Methods("POST")
-	router.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
-	router.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
+	r.HandleFunc("/meds", GetMeds).Methods("GET")
+	r.HandleFunc("/meds/{id}", GetMed).Methods("GET")
+	r.HandleFunc("/meds", CreateMed).Methods("POST")
+	r.HandleFunc("/meds/{id}", UpdateMed).Methods("PUT")
+	r.HandleFunc("/meds/{id}", DeleteMed).Methods("DELETE")
 
-	router.HandleFunc("/users/{page}", GetUsers).Methods("GET")
-	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
-	router.HandleFunc("/users", CreateUser).Methods("POST")
-	router.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
-	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+	r.HandleFunc("/users", GetUsers).Methods("GET")
+	r.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	r.HandleFunc("/users", CreateUser).Methods("POST")
+	r.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
+	r.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
-	router.HandleFunc("/pharmacies/{page}", GetPharmacies).Methods("GET")
-	router.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
-	router.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
-	router.HandleFunc("/pharmacies/{id}", UpdatePharmacy).Methods("PUT")
-	router.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
+	r.HandleFunc("/pharmacies", GetPharmacies).Methods("GET")
+	//r.HandleFunc("/pharmacies/{id}/users", GetUsersByPharmacyID).Methods("GET")
+	r.HandleFunc("/pharmacies/{id}", GetPharmacy).Methods("GET")
+	r.HandleFunc("/pharmacies", CreatePharmacy).Methods("POST")
+	r.HandleFunc("/pharmacies/{id}", UpdatePharmacy).Methods("PUT")
+	r.HandleFunc("/pharmacies/{id}", DeletePharmacy).Methods("DELETE")
 
-	router.HandleFunc("/login", Login).Methods("POST")
+	r.HandleFunc("/login", Login).Methods("POST")
 
-	http.Handle("/", router)
-
-	log.Fatal(http.ListenAndServe(":8080", router))
+	http.Handle("/", &MyServer{r})
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
@@ -685,9 +708,22 @@ func main() {
 
 }
 
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Content-Type", "application/json")
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+type MyServer struct {
+	r *mux.Router
+}
+
+
+func (s* MyServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if origin := req.Header.Get("Origin"); origin != "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, PUT, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
+
+	if req.Method == "OPTIONS" {
+		return
+	}
+
+	s.r.ServeHTTP(w, req)
 }
