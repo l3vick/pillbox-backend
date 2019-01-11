@@ -9,4 +9,5 @@ type Pharmacy struct {
 	Name 			string	`json:"name"`
 	Guard     		int		`json:"guard"`
 	Password		string	`json:"password"`
+	Account			string	`json:"account"`
 }

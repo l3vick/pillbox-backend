@@ -19,7 +19,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 	page := vars["page"]
 
 	var pharmacies []*model.Pharmacy
-	selDB, err := dbConnector.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM med LIMIT" + page + ",10")
+	selDB, err := dbConnector.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard, account FROM med LIMIT" + page + ",10")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -28,19 +28,20 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 
 	for selDB.Next() {
 		var id, numberPhone, guard int
-		var name, street, scheduler, cif string
-		err = selDB.Scan(&id, &name, &numberPhone, &guard, &street, &scheduler, &cif)
+		var name, street, scheduler, cif, account string
+		err = selDB.Scan(&id, &name, &numberPhone, &guard, &street, &scheduler, &cif, &account)
 		if err != nil {
 			panic(err.Error())
 		}
 		pharmacy := model.Pharmacy{
-			ID:   id,
-			Name: name,
-			NumberPhone:  numberPhone,
-			Guard:	guard,
-			Street:	street,
-			Schedule:	scheduler,
-			Cif:	cif,
+			ID:   			id,
+			Name: 			name,
+			NumberPhone:  	numberPhone,
+			Guard:			guard,
+			Street:			street,
+			Schedule:		scheduler,
+			Cif:			cif,
+			Account:		account,
 		}
 		pharmacies = append(pharmacies, &pharmacy)
 	}
@@ -58,7 +59,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	selDB, err := dbConnector.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard FROM pharmacy WHERE id=?", nID)
+	selDB, err := dbConnector.Query("SELECT id, cif, street, number_phone, schedule, `name`, guard, account FROM pharmacy WHERE id=?", nID)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -66,8 +67,8 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
 		var id, numberPhone, guard int
-		var name, street, scheduler, cif string
-		err = selDB.Scan(&id, &name, &numberPhone, &guard, &street, &scheduler, &cif)
+		var name, street, scheduler, cif, account string
+		err = selDB.Scan(&id, &name, &numberPhone, &guard, &street, &scheduler, &cif, &account)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -78,6 +79,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		pharmacy.Street = street
 		pharmacy.Schedule = scheduler
 		pharmacy.Cif = cif
+		pharmacy.Account = account
 	}
 
 	output, err := json.Marshal(pharmacy)
@@ -112,7 +114,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	w.Write(output)
-	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `street`, `number_phone`, `schedule`, `guard`, `password`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `street`, `number_phone`, `schedule`, `guard`, `password`, `account`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password, pharmacy.Account)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -149,7 +151,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET `name` = '%s', `cif` = '%s, `street` = '%s', `schedule` = '%s', `password` = '%s', `phone_number` = '%d', `guard` = '%d' WHERE (`id` = '%s)", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.Schedule, pharmacy.Password, pharmacy.NumberPhone, pharmacy.Guard, nID)
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET `name` = '%s', `cif` = '%s, `street` = '%s', `schedule` = '%s', `password` = '%s', `phone_number` = '%d', `guard` = '%d', `account` = `%s` WHERE (`id` = '%s)", pharmacy.Name, pharmacy.Cif, pharmacy.Street, pharmacy.Schedule, pharmacy.Password, pharmacy.NumberPhone, pharmacy.Guard, pharmacy.Account,nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)

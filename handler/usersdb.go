@@ -21,7 +21,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	elem := strconv.Itoa(elementsPage) 
 
-	query := fmt.Sprintf("SELECT id, name, med_breakfast, med_launch, med_dinner, alarm_breakfast, alarm_launch, alarm_dinner, id_pharmacy, (SELECT COUNT(*)  from rds_pharmacy.users) as count FROM users LIMIT " + elem + ",10 ")
+	query := fmt.Sprintf("SELECT id, name, surname, surname_last, med_breakfast, med_launch, med_dinner, alarm_breakfast, alarm_launch, alarm_dinner, age, address, phone, gender, mail, id_pharmacy, (SELECT COUNT(*)  from rds_pharmacy.users) as count FROM users LIMIT " + elem + ",10 ")
 
 	fmt.Println(query)
 
@@ -36,9 +36,9 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy, count int
-		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password string
-		err = selDB.Scan(&id, &name, &medBreakfast, &medLaunch, &medDinner, &alarmBreakfast, &alarmLaunch, &alarmDinner, &idPharmacy, &count)
+		var id, idPharmacy, count, age, phone int
+		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password, surname, surname_last, address, gender, mail string
+		err = selDB.Scan(&id, &name, &surname, &surname_last, &medBreakfast, &medLaunch, &medDinner, &alarmBreakfast, &alarmLaunch, &alarmDinner, &age, &address, &phone, &gender, &mail, &idPharmacy, &count)
 
 		if err != nil {
 			panic(err.Error())
@@ -47,6 +47,8 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		user := model.User{
 			ID:             id,
 			Name:           name,
+			Surname:        surname,
+			SurnameLast:    surname_last,
 			MedBreakfast:   medBreakfast,
 			MedLaunch:      medLaunch,
 			MedDinner:      medDinner,
@@ -54,6 +56,11 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			AlarmLaunch:    alarmLaunch,
 			AlarmDinner:    alarmDinner,
 			Password:       password,
+			Age:			age,
+			Address:		address,
+			Phone:			phone,
+			Gender:			gender,
+			Mail:			mail,
 			IDPharmacy:     idPharmacy,
 		}
 
@@ -110,9 +117,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy int
-		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password string
-		err = selDB.Scan(&id, &name, &medBreakfast, &medDinner, &medLaunch, &alarmDinner, &alarmLaunch, &alarmBreakfast, &password, &idPharmacy)
+		var id, idPharmacy, age, phone int
+		var name, medBreakfast, medLaunch, medDinner, alarmBreakfast, alarmLaunch, alarmDinner, password, surname, surname_last, address, gender, mail string
+		err = selDB.Scan(&id, &name, &surname, &surname_last, &medBreakfast, &medDinner, &medLaunch, &alarmDinner, &alarmLaunch, &alarmBreakfast, &password, &age, &address, &phone, &gender, &mail, &idPharmacy)
 
 		if err != nil {
 			panic(err.Error())
@@ -120,12 +127,19 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 		user.ID = id
 		user.Name = name
+		user.Surname = surname
+		user.SurnameLast = surname_last
 		user.MedBreakfast = medBreakfast
 		user.MedLaunch = medLaunch
 		user.MedDinner = medDinner
 		user.AlarmBreakfast = alarmBreakfast
 		user.AlarmLaunch = alarmLaunch
 		user.AlarmDinner = alarmDinner
+		user.Age = age
+		user.Address = address
+		user.Phone = phone
+		user.Gender = gender
+		user.Mail = mail
 		user.IDPharmacy = idPharmacy
 		user.Password = password
 	}
@@ -162,7 +176,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`users` (`name`, `med_breakfast`, `med_launch`, `med_dinner`, `alarm_breakfast`, `alarm_launch`, `alarm_dinner`, `password`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmLaunch, user.AlarmDinner, user.Password, user.IDPharmacy)
+	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`users` (`name`, `surname`, `surname_last`, `med_breakfast`, `med_launch`, `med_dinner`, `alarm_breakfast`, `alarm_launch`, `alarm_dinner`, `password`, `age`, `address`, `phone`, `gender`, `mail, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%d')", user.Name, user.Surname, user.SurnameLast, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmLaunch, user.AlarmDinner, user.Password, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -199,7 +213,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`users` SET `name` = '%s', `med_breakfast` = '%s', `med_launch` = '%s', `med_dinner` = '%s', `alarm_breakfast` = '%s', `alarm_launch` = '%s', `alarm_dinner` = '%s', `id_pharmacy` = '%d' WHERE (`id` = '%s')", user.Name, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmBreakfast, user.AlarmBreakfast, user.IDPharmacy, nID)
+	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`users` SET `name` = '%s', `surname` = '%s', `surname_last` = '%s', `med_breakfast` = '%s', `med_launch` = '%s', `med_dinner` = '%s', `alarm_breakfast` = '%s', `alarm_launch` = '%s', `alarm_dinner` = '%s', `age` = '%d', `address` = '%s', `phone` = '%d', `gender` = '%s', `mail` = '%s', `id_pharmacy` = '%d' WHERE (`id` = '%s')", user.Name, user.Surname, user.SurnameLast, user.MedBreakfast, user.MedLaunch, user.MedDinner, user.AlarmBreakfast, user.AlarmBreakfast, user.AlarmBreakfast, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy, nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
