@@ -714,8 +714,8 @@ type MyServer struct {
 
 
 func (s* MyServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if origin := req.Header.Get("Origin"); origin != "" {
-		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, GET, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-length, Accept-Encoding, X-CSRF-Token, Authorization")
