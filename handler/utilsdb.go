@@ -25,7 +25,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("SELECT * FROM rds_pharmacy.pharmacy WHERE number_phone =  %d  and password = '%s'", user.Phone, user.Password)
+	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.pharmacy WHERE phone_number =  %d  and password = '%s'", user.Phone, user.Password)
 
 	fmt.Println(query)
 	selDB, err := dbConnector.Query(query)

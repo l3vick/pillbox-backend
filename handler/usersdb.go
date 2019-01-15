@@ -111,7 +111,6 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 
 	nID := vars["id"]
 
-
 	pageNumber := r.URL.Query().Get("page")
 
 	intPage, err := strconv.Atoi(pageNumber)
