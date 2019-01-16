@@ -5,12 +5,12 @@ import "github.com/l3vick/go-pharmacy/util"
 type User struct {
 	ID              int		`json:"id"`
 	Name            string	`json:"name"`
-	SurName        string	`json:"surname"`
+	SurName        	string	`json:"surname"`
 	FamilyName     	string	`json:"familyname"`
 	Password       	string 	`json:"password"`
 	Age				int 	`json:"age"`
 	Address			string 	`json:"address"`
-	Phone			int 	`json:"phone"`
+	Phone			int 	`json:"phone_number"`
 	Gender			string 	`json:"gender"`
 	Mail			string 	`json:"mail"`
 	IDPharmacy     	int    	`json:"id_pharmacy"`
@@ -27,7 +27,7 @@ type UserNotNull struct {
 	Password       	util.JsonNullString 	`json:"password,omitempty"`
 	Age				util.JsonNullInt64 		`json:"age,omitempty"`
 	Address			util.JsonNullString 	`json:"address,omitempty"`
-	Phone			util.JsonNullInt64 		`json:"phone,omitempty"`
+	Phone			util.JsonNullInt64 		`json:"phone_number,omitempty"`
 	Gender			util.JsonNullString 	`json:"gender,omitempty"`
 	Mail			util.JsonNullString 	`json:"mail,omitempty"`
 	IDPharmacy     	int    					`json:"id_pharmacy"`

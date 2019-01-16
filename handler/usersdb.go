@@ -282,7 +282,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`users` (`name`, `surname`, `familyname`, `password`,  `age`, `address`, `phone`, `gender`, `mail, `id_pharmacy`, `zip`, `province`, `city`)  VALUES('%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s')", user.Name, user.SurName, user.FamilyName, user.Password, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy, user.Zip, user.Province, user.City)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`users` (`name`, `surname`, `familyname`, `password`, `age`, `address`, `phone_number`, `gender`, `mail`, `zip`, `province`, `city`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.SurName, user.FamilyName, user.Password, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.Zip, user.Province, user.City, user.IDPharmacy)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
