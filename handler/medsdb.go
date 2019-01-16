@@ -157,7 +157,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`meds` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`meds` (`name`, `description`, `id_pharmacyF`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)

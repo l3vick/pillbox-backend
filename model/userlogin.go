@@ -1,6 +1,6 @@
 package model
 
 type UserLogin struct {
-	Phone    int    `json:"number_phone"`
-	Password string `json:"password"`
+	Mail    	string  `json:"mail"`
+	Password 	string 	`json:"password"`
 }

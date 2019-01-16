@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/l3vick/go-pharmacy/util"
 	"net/http"
 	"fmt" 
 	"encoding/json"
@@ -10,7 +11,6 @@ import (
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
-
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -25,7 +25,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.pharmacy WHERE phone_number =  %d  and password = '%s'", user.Phone, user.Password)
+	query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy_sh.pharmacy WHERE mail = '%s'  and password = '%s'", user.Mail, user.Password)
 
 	fmt.Println(query)
 	selDB, err := dbConnector.Query(query)
@@ -33,22 +33,21 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := model.Pharmacy{}
+	pharmacy := model.PharmacyNotNull{}
 	for selDB.Next() {
-		var id, phoneNumber, guard int
-		var cif, street, schedule, name, password, mail string
-		err = selDB.Scan(&id, &cif, &street, &phoneNumber, &schedule, &name, &guard, &password, &mail)
+		var id int
+		var numberPhone, guard util.JsonNullInt64
+		var name, address, scheduler, cif, mail util.JsonNullString
+		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
 
 		pharmacy.ID = id
 		pharmacy.Cif = cif
-		pharmacy.Street = street
-		pharmacy.NumberPhone = phoneNumber
-		pharmacy.Schedule = schedule
+		pharmacy.Address = address
+		pharmacy.NumberPhone = numberPhone
+		pharmacy.Schedule = scheduler
 		pharmacy.Name = name
 		pharmacy.Guard = guard
-		pharmacy.Password = password
 		pharmacy.Mail = mail
-
 
 		if err != nil {
 			panic(err.Error())
