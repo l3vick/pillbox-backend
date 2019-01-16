@@ -5,15 +5,15 @@ import (
 )
 
 type Med struct {
-	ID   int	`json:"id"`
-	Name string `json:"name"`
-	Description  string    `json:"description"`
-	PharmacyID  util.JsonNullInt64 `json:"pharmacy_id,omitempty"`
+	ID   		int					`json:"id"`
+	Name 		string 				`json:"name"`
+	Description string    			`json:"description"`
+	PharmacyID  util.JsonNullInt64 	`json:"id_pharmacy,omitempty"`
 }
 
 type MedInt struct {
-	ID   int	`json:"id"`
-	Name string `json:"name"`
-	Description  string    `json:"description"`
-	PharmacyID  int `json:"pharmacy_id,omitempty"`
+	ID   		int		`json:"id"`
+	Name 		string 	`json:"name"`
+	Description string  `json:"description"`
+	PharmacyID  int 	`json:"id_pharmacy,omitempty"`
 }

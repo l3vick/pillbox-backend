@@ -116,3 +116,11 @@ func (v JsonNullInt64) UnmarshalJSON(data []byte) error {
     }
     return nil
 }
+
+func CheckUpdateNulls() {
+    //TODO: recibir los campos y si vienen vacios, dejarlos como estaban
+}
+
+func auth() {
+	//TODO: comprobar token que viene del front para ver si tiene sesión, si no, logout.
+}
