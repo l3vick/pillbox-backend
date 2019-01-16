@@ -12,7 +12,7 @@ func GetDB() *sql.DB{
 
 func ConectDB() {
 	var err error
-	db, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"rds_pharmacy")
+	db, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"pharmacy_sh")
 	if err != nil {
 		panic(err.Error()) 
 	}

@@ -1,6 +1,5 @@
 package model
 
-//Page ...
 type Page struct {
 	First int `json:"first"`
 	Previous int `json:"previous"`
