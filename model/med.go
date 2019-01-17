@@ -1,19 +1,19 @@
 package model
 
 import (
-	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/nullsql"
 )
 
 type Med struct {
-	ID   		int					`json:"id"`
-	Name 		string 				`json:"name"`
-	Description string    			`json:"description"`
-	PharmacyID  util.JsonNullInt64 	`json:"id_pharmacy,omitempty"`
-}
-
-type MedInt struct {
-	ID   		int		`json:"id"`
+	ID int		`json:"id"`
 	Name 		string 	`json:"name"`
 	Description string  `json:"description"`
-	PharmacyID  int 	`json:"id_pharmacy,omitempty"`
+	PharmacyID  int 	`json:"id_pharmacy"`
+}
+
+type MedSql struct {
+	ID * nullsql.JsonNullInt64 `json:"id,omitempty"`
+	Name * nullsql.JsonNullString `json:"name,omitempty"`
+	Description * nullsql.JsonNullString `json:"description,omitempty"`
+	PharmacyID * nullsql.JsonNullInt64 `json:"id_pharmacy,omitempty"`
 }

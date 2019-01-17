@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/nullsql"
 	"net/http"
 	"fmt" 
 	"encoding/json"
@@ -33,11 +33,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := model.PharmacyNotNull{}
+	pharmacy := model.PharmacySql{}
 	for selDB.Next() {
-		var id int
-		var numberPhone, guard util.JsonNullInt64
-		var name, address, scheduler, cif, mail util.JsonNullString
+		var id nullsql.JsonNullInt64
+		var numberPhone, guard *nullsql.JsonNullInt64
+		var name, address, scheduler, cif, mail *nullsql.JsonNullString
 		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
 
 		pharmacy.ID = id
