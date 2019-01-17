@@ -46,7 +46,8 @@ func main() {
 	r.HandleFunc("/pharmacies/{id}", handler.UpdatePharmacy).Methods("PUT")
 	r.HandleFunc("/pharmacies/{id}", handler.DeletePharmacy).Methods("DELETE")
 
-	r.HandleFunc("/login", handler.Login).Methods("POST")
+	r.HandleFunc("/login", handler.Login).Methods("POST")//check_mail?mail={“”}
+	//r.HandleFunc("/checkMail", handler.CheckMail).Methods("GET")
 
 	http.Handle("/", &MyServer{r})
 

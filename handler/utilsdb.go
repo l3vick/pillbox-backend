@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/l3vick/go-pharmacy/nullsql"
-	"net/http"
-	"fmt" 
 	"encoding/json"
+	"fmt"
+	"github.com/l3vick/go-pharmacy/nullsql"
 	"io/ioutil"
+	"net/http"
 
 	"github.com/l3vick/go-pharmacy/model"
 )
@@ -66,3 +66,21 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 	defer selDB.Close()
 }
+
+/*func CheckMail(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	mailRequest := vars["mail"]
+
+	selDB, err := dbConnector.Query("SELECT password FROM users WHERE mail=?", mailRequest)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	output, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Write(output)
+}*/
