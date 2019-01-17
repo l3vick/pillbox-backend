@@ -216,10 +216,11 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	nID := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	nID := vars["id"]
 	user := model.UserNotNull{}
 
-	selDB, err := dbConnector.Query("SELECT * FROM users WHERE id=?", nID)
+	selDB, err := dbConnector.Query("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city FROM users WHERE id=?", nID)
 
 	if err != nil {
 		panic(err.Error())
@@ -251,12 +252,12 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		user.City = city
 	}
 
-	userJSON, err := json.MarshalIndent(user, "", " ")
+	output, err := json.Marshal(user)
 	if err != nil {
-		// handle error
+		http.Error(w, err.Error(), 500)
+		return
 	}
-
-	w.Write([]byte(userJSON))
+	w.Write(output)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {

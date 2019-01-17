@@ -24,7 +24,7 @@ type UserNotNull struct {
 	Name            string					`json:"name"`
 	SurName         string					`json:"surname"`
 	FamilyName     	util.JsonNullString		`json:"familyname,omitempty"`
-	Password       	util.JsonNullString 	`json:"password,omitempty"`
+	Password *      util.JsonNullString 	`json:"password,omitempty"`
 	Age				util.JsonNullInt64 		`json:"age,omitempty"`
 	Address			util.JsonNullString 	`json:"address,omitempty"`
 	Phone			util.JsonNullInt64 		`json:"phone_number,omitempty"`
