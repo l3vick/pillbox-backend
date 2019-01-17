@@ -1,25 +1,37 @@
 package handler
 
 import (
-	"github.com/l3vick/go-pharmacy/util"
 	"net/http"
 	"fmt" 
+	"strconv"
 	"encoding/json"
 	"io/ioutil"
 	"strings"
 
+	"github.com/l3vick/go-pharmacy/nullsql"
 	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
 	"github.com/gorilla/mux"
 )
 
-
-
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	page := vars["page"]
 
-	var pharmacies []*model.PharmacyNotNull
-	selDB, err := dbConnector.Query("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM med LIMIT" + page + ",10")
+	pageNumber := r.URL.Query().Get("page")
+
+	intPage, err := strconv.Atoi(pageNumber)
+
+	elementsPage := intPage * 10
+
+	elem := strconv.Itoa(elementsPage)
+
+	query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail, (SELECT COUNT(*) from pharmacy_sh.pharmacy) as count FROM pharmacy_sh.pharmacy LIMIT " + elem + ",10")
+
+	fmt.Println(query)
+	var pharmacies []*model.PharmacySql
+
+	var page model.Page
+
+	selDB, err := dbConnector.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -27,14 +39,15 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 	message = strings.TrimPrefix(message, "/")
 
 	for selDB.Next() {
-		var id int
-		var numberPhone, guard util.JsonNullInt64
-		var name, address, scheduler, cif, mail util.JsonNullString
-		err = selDB.Scan(&id, &name, &numberPhone, &guard, &address, &scheduler, &cif, &mail)
+		var id nullsql.JsonNullInt64
+		var numberPhone, guard *nullsql.JsonNullInt64
+		var name, address, scheduler, cif, mail *nullsql.JsonNullString
+		var count int
+		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail, &count)
 		if err != nil {
 			panic(err.Error())
 		}
-		pharmacy := model.PharmacyNotNull{
+		pharmacy := model.PharmacySql{
 			ID:   			id,
 			Name: 			name,
 			NumberPhone:  	numberPhone,
@@ -45,8 +58,15 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 			Mail:			mail,
 		}
 		pharmacies = append(pharmacies, &pharmacy)
+		page = util.GetPage(count, intPage)
 	}
-	output, err := json.Marshal(pharmacies)
+
+	response := model.PharmacyResponse{
+		Pharmacy: pharmacies,
+		Page: page,
+	}
+
+	output, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -64,12 +84,12 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := model.PharmacyNotNull{}
+	pharmacy := model.PharmacySql{}
 	for selDB.Next() {
-		var id int
-		var numberPhone, guard util.JsonNullInt64
-		var name, address, scheduler, cif, mail util.JsonNullString
-		err = selDB.Scan(&id, &name, &numberPhone, &guard, &address, &scheduler, &cif, &mail)
+		var id nullsql.JsonNullInt64
+		var numberPhone, guard *nullsql.JsonNullInt64
+		var name, address, scheduler, cif, mail *nullsql.JsonNullString
+		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -125,7 +145,9 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
+
 	nID := vars["id"]
 
 	b, err := ioutil.ReadAll(r.Body)
@@ -150,7 +172,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `rds_pharmacy`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = `%s` WHERE (`id` = '%s)", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail,nID)
+	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = `%s` WHERE (`id` = '%s)", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail,nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
@@ -165,9 +187,10 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `rds_pharmacy`.`pharmacy` WHERE (`id` = '%s')", nID)
+	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`pharmacy` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
+
 	insert, err := dbConnector.Query(query)
 	if err != nil {
 		fmt.Println(err.Error())
