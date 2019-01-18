@@ -3,15 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/gorilla/mux"
-	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/nullsql"
-	"github.com/l3vick/go-pharmacy/util"
 )
 
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +24,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail, (SELECT COUNT(*) from pharmacy_sh.pharmacy) as count FROM pharmacy_sh.pharmacy LIMIT " + elem + ",10")
 
 	fmt.Println(query)
-	var pharmacies []*model.PharmacySql
+	var pharmacies []*model.Pharmacy
 
 	var page model.Page
 
@@ -35,19 +32,15 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error())
 	}
-	message := r.URL.Path
-	message = strings.TrimPrefix(message, "/")
 
 	for selDB.Next() {
-		var id nullsql.JsonNullInt64
-		var numberPhone, guard *nullsql.JsonNullInt64
-		var name, address, scheduler, cif, mail *nullsql.JsonNullString
-		var count int
+		var id, numberPhone, guard, count int
+		var name, address, scheduler, cif, mail string
 		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail, &count)
 		if err != nil {
 			panic(err.Error())
 		}
-		pharmacy := model.PharmacySql{
+		pharmacy := model.Pharmacy{
 			ID:   			id,
 			Name: 			name,
 			NumberPhone:  	numberPhone,
@@ -84,11 +77,10 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := model.PharmacySql{}
+	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
-		var id nullsql.JsonNullInt64
-		var numberPhone, guard *nullsql.JsonNullInt64
-		var name, address, scheduler, cif, mail *nullsql.JsonNullString
+		var id, numberPhone, guard int
+		var name, address, scheduler, cif, mail string
 		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
 		if err != nil {
 			panic(err.Error())

@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/l3vick/go-pharmacy/nullsql"
 	"io/ioutil"
 	"net/http"
 
@@ -33,11 +32,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := model.PharmacySql{}
+	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
-		var id nullsql.JsonNullInt64
-		var numberPhone, guard *nullsql.JsonNullInt64
-		var name, address, scheduler, cif, mail *nullsql.JsonNullString
+		var id, numberPhone, guard int
+		var name, address, scheduler, cif, mail string
 		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
 
 		pharmacy.ID = id
@@ -78,10 +76,10 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	pharmacy := model.PharmacySql{}
+	pharmacy := model.Pharmacy{}
 	for selDB.Next() {
-		var id nullsql.JsonNullInt64
-		var mail, password *nullsql.JsonNullString
+		var id int
+		var mail, password string
 		err = selDB.Scan(&id, &mail, &password)
 
 		if err != nil {
@@ -90,11 +88,9 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println(password)
-
 		pharmacy.ID = id
 		pharmacy.Mail = mail
-		if password.String == "" {
+		if password == "" {
 			pharmacy.State = false
 		}else{
 			pharmacy.State = true

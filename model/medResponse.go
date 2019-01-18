@@ -1,6 +1,6 @@
 package model
 
 type MedResponse struct {
-	Meds []*MedSql `json:"meds"`
+	Meds []*Med `json:"meds"`
 	Page Page `json:"page"`
 }

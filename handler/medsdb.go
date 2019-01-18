@@ -1,16 +1,15 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
-	"fmt"
-	"encoding/json"
-	"io/ioutil"
 
-	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/nullsql"
-	"github.com/l3vick/go-pharmacy/util"
 	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
 )
 
 
@@ -28,7 +27,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	var meds []*model.MedSql
+	var meds []*model.Med
 
 	var page model.Page
 
@@ -38,17 +37,14 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id *nullsql.JsonNullInt64
-		var name *nullsql.JsonNullString
-		var description *nullsql.JsonNullString
-		var pharmacyID *nullsql.JsonNullInt64
-		var count int
+		var id, pharmacyID, count int
+		var name, description string
 		err = selDB.Scan(&id, &name, &description, &pharmacyID, &count)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		med := model.MedSql{
+		med := model.Med{
 			ID:   id,
 			Name: name,
 			Description:  description,
@@ -86,10 +82,10 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	med := model.MedSql{}
+	med := model.Med{}
 	for selDB.Next() {
-		var id, pharmacyId *nullsql.JsonNullInt64
-		var name, description *nullsql.JsonNullString
+		var id, pharmacyId int
+		var name, description string
 		err = selDB.Scan(&id, &name, &description, &pharmacyId)
 		if err != nil {
 			panic(err.Error())

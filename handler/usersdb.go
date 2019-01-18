@@ -23,7 +23,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	var users []*model.UserSql
+	var users []*model.User
 
 	var page model.Page
 
@@ -34,17 +34,15 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy nullsql.JsonNullInt64
-		var count int
-		var age, phone_number *nullsql.JsonNullInt64
-		var name, surname, familyname, address, gender, mail, zip, province, city *nullsql.JsonNullString
+		var id, idPharmacy, count, age, phone_number int
+		var name, surname, familyname, address, gender, mail, zip, province, city string
 		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &idPharmacy, &zip, &province, &city, &count)
 
 		if err != nil {
 			panic(err.Error())
 		}
 
-		user := model.UserSql{
+		user := model.User{
 			ID:             id,
 			Name:           name,
 			SurName:       	surname,
@@ -65,7 +63,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		page = util.GetPage(count, intPage)
 	}
 
-	response := model.UserResponseSql{
+	response := model.UserResponse{
 		Users: users,
 		Page: page,
 	}
@@ -82,6 +80,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 	vars := mux.Vars(r)
 	nID := vars["id"]
+
 	pageNumber := r.URL.Query().Get("page")
 	intPage, err := strconv.Atoi(pageNumber)
 	elementsPage := intPage * 10
@@ -91,7 +90,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 
 	fmt.Println(query)
 
-	var users []*model.UserSql
+	var users []*model.User
 	var page model.Page
 
 	selDB, err := dbConnector.Query(query)
@@ -101,17 +100,15 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy nullsql.JsonNullInt64
-		var age, phone_number *nullsql.JsonNullInt64
-		var count int
-		var name, surname, familyname, address, gender, mail, zip, province, city *nullsql.JsonNullString
+		var id, idPharmacy , age, phone_number , count int
+		var name, surname, familyname, address, gender, mail, zip, province, city string
 		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &idPharmacy, &count, &zip, &province, &city)
 
 		if err != nil {
 			panic(err.Error())
 		}
 
-		user := model.UserSql{
+		user := model.User{
 			ID:             id,
 			Name:           name,
 			SurName: 		surname,
@@ -133,7 +130,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 		page = util.GetPage(count, intPage)
 	}
 
-	response := model.UserResponseSql{
+	response := model.UserResponse{
 		Users: users,
 		Page: page,
 	}
@@ -150,7 +147,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
-	user := model.UserSql{}
+	user := model.User{}
 
 	selDB, err := dbConnector.Query("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city FROM users WHERE id=?", nID)
 
@@ -159,9 +156,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy nullsql.JsonNullInt64
-		var age, phone_number *nullsql.JsonNullInt64
-		var name, surname, familyname, address, gender, mail, zip, province, city *nullsql.JsonNullString
+		var id, idPharmacy, age, phone_number int
+		var name, surname, familyname, address, gender, mail, zip, province, city string
 		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &idPharmacy, &zip, &province, &city)
 
 		if err != nil {
