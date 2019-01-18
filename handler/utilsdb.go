@@ -25,7 +25,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy_sh.pharmacy WHERE mail = '%s'  and password = '%s'", user.Mail, user.Password)
+	query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy_sh.pharmacy WHERE mail = '%s' and password = '%s'", user.Mail, user.Password)
 
 	fmt.Println(query)
 	selDB, err := dbConnector.Query(query)
@@ -67,20 +67,46 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	defer selDB.Close()
 }
 
-/*func CheckMail(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	mailRequest := vars["mail"]
+func CheckMail(w http.ResponseWriter, r *http.Request) {
+	mailRequest := r.URL.Query().Get("mail")
 
-	selDB, err := dbConnector.Query("SELECT password FROM users WHERE mail=?", mailRequest)
+	query := fmt.Sprintf("SELECT id, mail, password FROM pharmacy_sh.pharmacy WHERE mail = '%s'", mailRequest)
+	fmt.Println(query)
 
+	selDB, err := dbConnector.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	output, err := json.Marshal(user)
+	pharmacy := model.PharmacySql{}
+	for selDB.Next() {
+		var id nullsql.JsonNullInt64
+		var mail, password *nullsql.JsonNullString
+		err = selDB.Scan(&id, &mail, &password)
+
+		if err != nil {
+			panic(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		fmt.Println(password)
+
+		pharmacy.ID = id
+		pharmacy.Mail = mail
+		if password.String == "" {
+			pharmacy.State = false
+		}else{
+			pharmacy.State = true
+		}
+	}
+
+	output, err := json.Marshal(pharmacy)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
 	w.Write(output)
-}*/
+	defer selDB.Close()
+}

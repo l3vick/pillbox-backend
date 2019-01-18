@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"net/http"
-	"fmt" 
-	"strconv"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/http"
+	"strconv"
 	"strings"
 
-	"github.com/l3vick/go-pharmacy/nullsql"
-	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"
 	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/nullsql"
+	"github.com/l3vick/go-pharmacy/util"
 )
 
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {

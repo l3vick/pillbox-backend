@@ -1,6 +1,8 @@
 package model
 
-import "github.com/l3vick/go-pharmacy/nullsql"
+import (
+	"github.com/l3vick/go-pharmacy/nullsql"
+)
 
 type Pharmacy struct {
 	ID              int		`json:"id"`
@@ -24,4 +26,5 @@ type PharmacySql struct {
 	Guard     		*nullsql.JsonNullInt64	`json:"guard,omitempty"`
 	Password		*nullsql.JsonNullString	`json:"password,omitempty"`
 	Mail			*nullsql.JsonNullString	`json:"mail,omitempty"`
+	State			bool   `json:"state"`
 }
