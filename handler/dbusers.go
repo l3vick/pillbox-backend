@@ -18,7 +18,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	elementsPage := intPage * 10
 	elem := strconv.Itoa(elementsPage) 
 
-	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city, (SELECT COUNT(*)  from pharmacy_sh.users) as count FROM users LIMIT " + elem + ",10 ")
+	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city, (SELECT COUNT(*)  from pharmacy_sh.user) as count FROM user LIMIT " + elem + ",10 ")
 
 	fmt.Println(query)
 
@@ -85,7 +85,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 	elementsPage := intPage * 10
 	elem := strconv.Itoa(elementsPage)
 
-	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city, (SELECT COUNT(*)  from pharmacy_sh.users where id_pharmacy = " + nID + ") FROM pharmacy_sh.users where id_pharmacy = " + nID + " limit " + elem + ", 10")
+	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city, (SELECT COUNT(*)  from pharmacy_sh.user where id_pharmacy = " + nID + ") FROM pharmacy_sh.user where id_pharmacy = " + nID + " limit " + elem + ", 10")
 
 	fmt.Println(query)
 
@@ -148,7 +148,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	nID := vars["id"]
 	user := model.User{}
 
-	selDB, err := dbConnector.Query("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city FROM users WHERE id=?", nID)
+	selDB, err := dbConnector.Query("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city FROM user WHERE id=?", nID)
 
 	if err != nil {
 		panic(err.Error())
@@ -209,7 +209,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`users` (`name`, `surname`, `familyname`, `password`, `age`, `address`, `phone_number`, `gender`, `mail`, `zip`, `province`, `city`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.SurName, user.FamilyName, user.Password, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.Zip, user.Province, user.City, user.IDPharmacy)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`user` (`name`, `surname`, `familyname`, `password`, `age`, `address`, `phone_number`, `gender`, `mail`, `zip`, `province`, `city`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.SurName, user.FamilyName, user.Password, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.Zip, user.Province, user.City, user.IDPharmacy)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -247,7 +247,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`users` SET `name` = '%s', `surname` = '%s', `familyname` = '%s', `age` = '%d', `address` = '%s', `phone_number` = '%d', `gender` = '%s', `mail` = '%s', `id_pharmacy` = '%d', `zip` = '%s', `province` = '%s', `city` = '%s' WHERE (`id` = '%s')", user.Name, user.SurName, user.FamilyName, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy, user.Zip, user.Province, user.City, nID)
+	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`user` SET `name` = '%s', `surname` = '%s', `familyname` = '%s', `age` = '%d', `address` = '%s', `phone_number` = '%d', `gender` = '%s', `mail` = '%s', `id_pharmacy` = '%d', `zip` = '%s', `province` = '%s', `city` = '%s' WHERE (`id` = '%s')", user.Name, user.SurName, user.FamilyName, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy, user.Zip, user.Province, user.City, nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
@@ -259,11 +259,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`users` WHERE (`id` = '%s')", nID)
+	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`user` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)

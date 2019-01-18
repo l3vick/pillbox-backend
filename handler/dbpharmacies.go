@@ -12,7 +12,6 @@ import (
 )
 
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
-
 	pageNumber := r.URL.Query().Get("page")
 
 	intPage, err := strconv.Atoi(pageNumber)
@@ -126,7 +125,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	w.Write(output)
-	query := fmt.Sprintf("INSERT INTO `rds_pharmacy`.`pharmacy` (`name`, `cif`, `address`, `phone_number`, `schedule`, `guard`, `password`, `mail`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password, pharmacy.Mail)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`pharmacy` (`name`, `cif`, `address`, `phone_number`, `schedule`, `guard`, `password`, `mail`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password, pharmacy.Mail)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)

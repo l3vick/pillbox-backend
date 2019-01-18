@@ -23,7 +23,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 
 	elem := strconv.Itoa(elementsPage)
 
-	query := fmt.Sprintf("SELECT id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.meds) as count FROM pharmacy_sh.meds LIMIT " + elem + ",10")
+	query := fmt.Sprintf("SELECT id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med) as count FROM pharmacy_sh.med LIMIT " + elem + ",10")
 
 	fmt.Println(query)
 
@@ -73,7 +73,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.meds WHERE id = "+ nID + "")
+	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.med WHERE id = "+ nID + "")
 
 	fmt.Println(query)
 
@@ -120,7 +120,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`meds` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name , med.Description, med.PharmacyID)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name , med.Description, med.PharmacyID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -149,7 +149,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var query string = "UPDATE `pharmacy_sh`.`meds` SET"
+	var query string = "UPDATE `pharmacy_sh`.`med` SET"
 
 	if med.Name != "" {
 		query = query + fmt.Sprintf("`name` = '%s'", med.Name)
@@ -180,7 +180,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`meds` WHERE (`id` = '%s')", nID)
+	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`med` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)

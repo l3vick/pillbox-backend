@@ -60,8 +60,6 @@ func main() {
 	r.HandleFunc("/login", handler.Login).Methods("POST")
 	r.HandleFunc("/checkMail", handler.CheckMail).Methods("GET")
 
-
-
 	http.Handle("/", &MyServer{r})
 
 	if err := http.ListenAndServe(":8081", nil); err != nil {
