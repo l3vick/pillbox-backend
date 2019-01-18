@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/nullsql"
 	"github.com/l3vick/go-pharmacy/util"
 	"github.com/gorilla/mux"
 )

@@ -46,8 +46,21 @@ func main() {
 	r.HandleFunc("/pharmacies/{id}", handler.UpdatePharmacy).Methods("PUT")
 	r.HandleFunc("/pharmacies/{id}", handler.DeletePharmacy).Methods("DELETE")
 
+	r.HandleFunc("/treatments", handler.GetTreatments).Methods("GET")
+	r.HandleFunc("/treatments/{id}", handler.GetTreatment).Methods("GET")
+	r.HandleFunc("/treatments", handler.CreateTreatment).Methods("POST")
+	r.HandleFunc("/treatments/{id}", handler.UpdateTreatment).Methods("PUT")
+	r.HandleFunc("/treatments/{id}", handler.DeleteTreatment).Methods("DELETE")
+
+	r.HandleFunc("/timing/{id}", handler.GetTiming).Methods("GET")
+	r.HandleFunc("/timing", handler.CreateTiming).Methods("POST")
+	r.HandleFunc("/timing/{id}", handler.UpdateTiming).Methods("PUT")
+	r.HandleFunc("/timing/{id}", handler.DeleteTiming).Methods("DELETE")
+
 	r.HandleFunc("/login", handler.Login).Methods("POST")
 	r.HandleFunc("/checkMail", handler.CheckMail).Methods("GET")
+
+
 
 	http.Handle("/", &MyServer{r})
 
