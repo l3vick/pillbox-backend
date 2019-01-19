@@ -52,6 +52,7 @@ func main() {
 	r.HandleFunc("/treatments/{id}", handler.UpdateTreatment).Methods("PUT")
 	r.HandleFunc("/treatments/{id}", handler.DeleteTreatment).Methods("DELETE")
 
+	r.HandleFunc("/timing/{id}", handler.GetTiming).Methods("GET")
 	r.HandleFunc("/timing", handler.CreateTiming).Methods("POST")
 	r.HandleFunc("/timing/{id}", handler.UpdateTiming).Methods("PUT")
 	r.HandleFunc("/timing/{id}", handler.DeleteTiming).Methods("DELETE")
