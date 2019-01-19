@@ -13,27 +13,27 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Tim
 
 	var timingResponse model.TimingResponse
 
-	selDB, err := dbConnector.Query("SELECT * FROM timing WHERE id_user=?", idUser)
+	selDB, err := dbConnector.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
 
 	if err != nil {
 		panic(err.Error())
 	}
+	for selDB.Next() {
+		var morningTime, afternoonTime, eveningTime string
+		var morning, afternoon, evening byte
+		err = selDB.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
 
-	var morningTime, afternoonTime, eveningTime string
-	var morning, afternoon, evening byte
-	err = selDB.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
+		if err != nil {
+			panic(err.Error())
+		}
 
-	if err != nil {
-		panic(err.Error())
+		timingResponse.Morning = morning
+		timingResponse.Afternoon = afternoon
+		timingResponse.Evening = evening
+		timingResponse.Morning_Time = morningTime
+		timingResponse.Afternoon_Time = afternoonTime
+		timingResponse.Evening_Time = eveningTime
 	}
-
-	timingResponse.Morning = morning
-	timingResponse.Afternoon = afternoon
-	timingResponse.Evening = evening
-	timingResponse.Morning_Time = morningTime
-	timingResponse.Afternoon_Time = afternoonTime
-	timingResponse.Evening_Time = eveningTime
-
 	return timingResponse
 }
 

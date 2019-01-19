@@ -20,7 +20,7 @@ func GetTreatments(w http.ResponseWriter, r *http.Request) {
 
 	treatmentsResponse = GetTreatment(nID, w, r)
 	treatmentsResponse.TreatmentsCustom = GetTreatmentsCustom(nID, w, r)
-	//treatmentsResponse.Timing = GetTiming(nID, w, r)
+	treatmentsResponse.Timing = GetTiming(nID, w, r)
 
 	output, err := json.Marshal(treatmentsResponse)
 	if err != nil {
