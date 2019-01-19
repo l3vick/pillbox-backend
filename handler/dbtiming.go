@@ -98,15 +98,7 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := json.Marshal(timing)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	w.Write(output)
-
-	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`timing` SET `id_user` = '%d', `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `morning_time` = '%s', `afternoon_time` = '%s', `evening_time` = '%s' WHERE (`id_user` = '%s')", timing.Id_User, timing.Morning, timing.Afternoon, timing.Evening, timing.Morning_Time, timing.Afternoon_Time, timing.Evening_Time, nID)
+	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`timing` SET `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `morning_time` = '%s', `afternoon_time` = '%s', `evening_time` = '%s' WHERE (`id_user` = '%s')", timing.Morning, timing.Afternoon, timing.Evening, timing.Morning_Time, timing.Afternoon_Time, timing.Evening_Time, nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
