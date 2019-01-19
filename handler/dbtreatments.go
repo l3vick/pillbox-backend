@@ -3,13 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 )
-
 
 func GetTreatments(w http.ResponseWriter, r *http.Request) {
 
@@ -20,7 +19,7 @@ func GetTreatment(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.treatment WHERE id = "+ nID + "")
+	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.treatment WHERE id = " + nID + "")
 
 	fmt.Println(query)
 
@@ -75,7 +74,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	w.Write(output)
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatments` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `end_treatment`)  VALUES('%d', '%d', '%t', '%t', '%t', '%s')", treatment.IDUser, treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.EndTreatment)
 
@@ -92,5 +91,5 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
-	
+
 }
