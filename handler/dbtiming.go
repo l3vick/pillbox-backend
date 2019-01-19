@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func GetTiming(w http.ResponseWriter, r *http.Request, idUser int) {
+func GetTiming(w http.ResponseWriter, r *http.Request, idUser int) model.Timing {
 	timing := model.Timing{}
 
 	selDB, err := dbConnector.Query("SELECT * FROM timing WHERE id_user=?", idUser)
@@ -18,31 +18,23 @@ func GetTiming(w http.ResponseWriter, r *http.Request, idUser int) {
 		panic(err.Error())
 	}
 
-	for selDB.Next() {
-		var idUser int
-		var morningTime, afternoonTime, eveningTime string
-		var morning, afternoon, evening byte
-		err = selDB.Scan(&idUser, &morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
+	var morningTime, afternoonTime, eveningTime string
+	var morning, afternoon, evening byte
+	err = selDB.Scan(&idUser, &morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
 
-		if err != nil {
-			panic(err.Error())
-		}
-
-		timing.Id_User = idUser
-		timing.Morning = morning
-		timing.Afternoon = afternoon
-		timing.Evening = evening
-		timing.Morning_Time = morningTime
-		timing.Afternoon_Time = afternoonTime
-		timing.Evening_Time = eveningTime
-	}
-
-	output, err := json.Marshal(timing)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		panic(err.Error())
 	}
-	w.Write(output)
+
+	timing.Id_User = idUser
+	timing.Morning = morning
+	timing.Afternoon = afternoon
+	timing.Evening = evening
+	timing.Morning_Time = morningTime
+	timing.Afternoon_Time = afternoonTime
+	timing.Evening_Time = eveningTime
+
+	return timing
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {
