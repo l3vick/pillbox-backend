@@ -73,9 +73,22 @@ func CreateTiming(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
 
+	var timingResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		timingResponse.Code = 500
+		timingResponse.Message = err.Error()
+	} else {
+		timingResponse.Code = 200
+		timingResponse.Message = "Timing creado con éxito"
 	}
+
+	output, err2 := json.Marshal(timingResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }
@@ -102,9 +115,23 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
+
+	var timingResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		timingResponse.Code = 500
+		timingResponse.Message = err.Error()
+	} else {
+		timingResponse.Code = 200
+		timingResponse.Message = "Timing actualizado con éxito"
 	}
+
+	output, err := json.Marshal(timingResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer update.Close()
 }
@@ -117,10 +144,23 @@ func DeleteTiming(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
+
+	var timingResponse model.RequestResponse
 	if err != nil {
-		fmt.Println(err.Error())
-		panic(err.Error())
+		timingResponse.Code = 500
+		timingResponse.Message = err.Error()
+	} else {
+		timingResponse.Code = 200
+		timingResponse.Message = "Timing borrado con éxito"
 	}
+
+	output, err := json.Marshal(timingResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }
