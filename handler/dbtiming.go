@@ -9,12 +9,10 @@ import (
 	"net/http"
 )
 
-func GetTiming(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	nID := vars["id"]
+func GetTiming(w http.ResponseWriter, r *http.Request, idUser int) {
 	timing := model.Timing{}
 
-	selDB, err := dbConnector.Query("SELECT * FROM timing WHERE id=?", nID)
+	selDB, err := dbConnector.Query("SELECT * FROM timing WHERE id=?", idUser)
 
 	if err != nil {
 		panic(err.Error())
