@@ -3,13 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 )
-
 
 func GetTreatments(w http.ResponseWriter, r *http.Request) {
 
@@ -21,9 +20,7 @@ func GetTreatments(w http.ResponseWriter, r *http.Request) {
 
 	treatmentsResponse = GetTreatment(nID, w, r)
 	treatmentsResponse.TreatmentsCustom = GetTreatmentsCustom(nID, w, r)
-
-	//treatmentsResponse.TreatmentsCustom = GetTreatmentCustom(nID, w, r)
-	//treatmentsResponse.Timing = treatmentsCustom
+	//treatmentsResponse.Timing = GetTiming(nID, w, r)
 
 	output, err := json.Marshal(treatmentsResponse)
 	if err != nil {
@@ -170,7 +167,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	w.Write(output)
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s')", treatment.IDUser, treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.EndTreatment)
 
@@ -187,5 +184,5 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
-	
+
 }

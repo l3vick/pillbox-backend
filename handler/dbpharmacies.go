@@ -40,14 +40,14 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 		pharmacy := model.Pharmacy{
-			ID:   			id,
-			Name: 			name,
-			NumberPhone:  	numberPhone,
-			Guard:			guard,
-			Address:		address,
-			Schedule:		scheduler,
-			Cif:			cif,
-			Mail:			mail,
+			ID:          id,
+			Name:        name,
+			NumberPhone: numberPhone,
+			Guard:       guard,
+			Address:     address,
+			Schedule:    scheduler,
+			Cif:         cif,
+			Mail:        mail,
 		}
 		pharmacies = append(pharmacies, &pharmacy)
 		page = util.GetPage(count, intPage)
@@ -55,7 +55,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 
 	response := model.PharmacyResponse{
 		Pharmacy: pharmacies,
-		Page: page,
+		Page:     page,
 	}
 
 	output, err := json.Marshal(response)
@@ -63,7 +63,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	w.Write(output)
 }
 
@@ -99,7 +99,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	w.Write(output)
 }
 
@@ -123,15 +123,30 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	w.Write(output)
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`pharmacy` (`name`, `cif`, `address`, `phone_number`, `schedule`, `guard`, `password`, `mail`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password, pharmacy.Mail)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
+
+	var pharmacyResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		pharmacyResponse.Code = 500
+		pharmacyResponse.Message = err.Error()
+	} else {
+		pharmacyResponse.Code = 200
+		pharmacyResponse.Message = "Pharmacy creada con éxito"
 	}
+
+	output, err2 := json.Marshal(pharmacyResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+
 	defer insert.Close()
 }
 
@@ -163,13 +178,27 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = `%s` WHERE (`id` = '%s)", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail,nID)
+	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = `%s` WHERE (`id` = '%s)", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail, nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
+
+	var pharmacyResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		pharmacyResponse.Code = 500
+		pharmacyResponse.Message = err.Error()
+	} else {
+		pharmacyResponse.Code = 200
+		pharmacyResponse.Message = "Pharmacy actualizada con éxito"
 	}
+
+	output, err2 := json.Marshal(pharmacyResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer update.Close()
 }
@@ -183,10 +212,23 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 
 	insert, err := dbConnector.Query(query)
+
+	var pharmacyResponse model.RequestResponse
 	if err != nil {
-		fmt.Println(err.Error())
-		panic(err.Error())
+		pharmacyResponse.Code = 500
+		pharmacyResponse.Message = err.Error()
+	} else {
+		pharmacyResponse.Code = 200
+		pharmacyResponse.Message = "Pharmacy borrada con éxito"
 	}
+
+	output, err := json.Marshal(pharmacyResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }

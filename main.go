@@ -2,14 +2,13 @@ package main
 
 import (
 	_ "errors"
-	"github.com/l3vick/go-pharmacy/handler"
 	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/handler"
 	"net/http"
 	"strings"
 
 	"github.com/gorilla/mux"
 )
-
 
 func root(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
@@ -17,7 +16,6 @@ func root(w http.ResponseWriter, r *http.Request) {
 	message = "App Farmacias" + message
 	w.Write([]byte(message))
 }
-
 
 func main() {
 	db.ConectDB()
@@ -51,7 +49,6 @@ func main() {
 	r.HandleFunc("/treatments/{id}", handler.UpdateTreatment).Methods("PUT")
 	r.HandleFunc("/treatments/{id}", handler.DeleteTreatment).Methods("DELETE")
 
-	r.HandleFunc("/timing/{id}", handler.GetTiming).Methods("GET")
 	r.HandleFunc("/timing", handler.CreateTiming).Methods("POST")
 	r.HandleFunc("/timing/{id}", handler.UpdateTiming).Methods("PUT")
 	r.HandleFunc("/timing/{id}", handler.DeleteTiming).Methods("DELETE")
@@ -71,8 +68,7 @@ type MyServer struct {
 	r *mux.Router
 }
 
-
-func (s* MyServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (s *MyServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if origin := req.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

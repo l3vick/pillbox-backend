@@ -28,12 +28,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	selDB, err := dbConnector.Query(query)
-	if err != nil {
-		panic(err.Error())
-	}
 
-	pharmacy := model.Pharmacy{}
-	for selDB.Next() {
+	var checkMailResponse model.RequestResponse
+	if err != nil {
+		checkMailResponse.Code = 500
+		checkMailResponse.Message = err.Error()
+		output, _ := json.Marshal(checkMailResponse)
+		w.Write(output)
+	} else {
+		pharmacy := model.Pharmacy{}
 		var id, numberPhone, guard int
 		var name, address, scheduler, cif, mail string
 		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
@@ -53,15 +56,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	}
+		output, err := json.Marshal(pharmacy)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 
-	output, err := json.Marshal(pharmacy)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		w.Write(output)
 	}
-
-	w.Write(output)
 	defer selDB.Close()
 }
 
@@ -72,12 +74,15 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 
 	selDB, err := dbConnector.Query(query)
-	if err != nil {
-		panic(err.Error())
-	}
 
-	pharmacy := model.Pharmacy{}
-	for selDB.Next() {
+	var checkMailResponse model.RequestResponse
+	if err != nil {
+		checkMailResponse.Code = 500
+		checkMailResponse.Message = err.Error()
+		output, _ := json.Marshal(checkMailResponse)
+		w.Write(output)
+	} else {
+		pharmacy := model.Pharmacy{}
 		var id int
 		var mail, password string
 		err = selDB.Scan(&id, &mail, &password)
@@ -92,17 +97,17 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 		pharmacy.Mail = mail
 		if password == "" {
 			pharmacy.State = false
-		}else{
+		} else {
 			pharmacy.State = true
 		}
-	}
 
-	output, err := json.Marshal(pharmacy)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
+		output, err := json.Marshal(pharmacy)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 
-	w.Write(output)
+		w.Write(output)
+	}
 	defer selDB.Close()
 }
