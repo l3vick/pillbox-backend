@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
-	"github.com/gorilla/mux"
 )
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	pageNumber := r.URL.Query().Get("page")
 	intPage, err := strconv.Atoi(pageNumber)
 	elementsPage := intPage * 10
-	elem := strconv.Itoa(elementsPage) 
+	elem := strconv.Itoa(elementsPage)
 
 	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city, (SELECT COUNT(*)  from pharmacy_sh.user) as count FROM user LIMIT " + elem + ",10 ")
 
@@ -42,19 +42,19 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		}
 
 		user := model.User{
-			ID:             id,
-			Name:           name,
-			SurName:       	surname,
-			FamilyName:    	familyname,
-			Age:			age,
-			Address:		address,
-			Phone:			phone_number,
-			Gender:			gender,
-			Mail:			mail,
-			IDPharmacy:     idPharmacy,
-			Zip:			zip,
-			Province:		province,
-			City:			city,
+			ID:         id,
+			Name:       name,
+			SurName:    surname,
+			FamilyName: familyname,
+			Age:        age,
+			Address:    address,
+			Phone:      phone_number,
+			Gender:     gender,
+			Mail:       mail,
+			IDPharmacy: idPharmacy,
+			Zip:        zip,
+			Province:   province,
+			City:       city,
 		}
 
 		users = append(users, &user)
@@ -64,7 +64,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	response := model.UserResponse{
 		Users: users,
-		Page: page,
+		Page:  page,
 	}
 
 	output, err := json.Marshal(response)
@@ -73,10 +73,10 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(output)	
+	w.Write(output)
 }
 
-func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
+func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -99,7 +99,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy , age, phone_number , count int
+		var id, idPharmacy, age, phone_number, count int
 		var name, surname, familyname, address, gender, mail, zip, province, city string
 		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &idPharmacy, &count, &zip, &province, &city)
 
@@ -108,20 +108,19 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 		}
 
 		user := model.User{
-			ID:             id,
-			Name:           name,
-			SurName: 		surname,
-			FamilyName: 	familyname,
-			Age:			age,
-			Address:		address,
-			Phone:			phone_number,
-			Gender:			gender,
-			Mail:			mail,
-			IDPharmacy: 	idPharmacy,
-			Zip:			zip,
-			Province:		province,
-			City:			city,
-
+			ID:         id,
+			Name:       name,
+			SurName:    surname,
+			FamilyName: familyname,
+			Age:        age,
+			Address:    address,
+			Phone:      phone_number,
+			Gender:     gender,
+			Mail:       mail,
+			IDPharmacy: idPharmacy,
+			Zip:        zip,
+			Province:   province,
+			City:       city,
 		}
 
 		users = append(users, &user)
@@ -131,7 +130,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request){
 
 	response := model.UserResponse{
 		Users: users,
-		Page: page,
+		Page:  page,
 	}
 
 	output, err := json.Marshal(response)
@@ -193,7 +192,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	var user model.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
@@ -214,9 +213,22 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
 
+	var userResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		userResponse.Code = 500
+		userResponse.Message = err.Error()
+	} else {
+		userResponse.Code = 200
+		userResponse.Message = "User creado con éxito"
 	}
+
+	output, err2 := json.Marshal(userResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }
@@ -251,9 +263,23 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
+
+	var userResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		userResponse.Code = 500
+		userResponse.Message = err.Error()
+	} else {
+		userResponse.Code = 200
+		userResponse.Message = "User actualizado con éxito"
 	}
+
+	output, err2 := json.Marshal(userResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer update.Close()
 }
@@ -266,10 +292,23 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
+
+	var userResponse model.RequestResponse
 	if err != nil {
-		fmt.Println(err.Error())
-		panic(err.Error())
+		userResponse.Code = 500
+		userResponse.Message = err.Error()
+	} else {
+		userResponse.Code = 200
+		userResponse.Message = "User borrada con éxito"
 	}
+
+	output, err := json.Marshal(userResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }

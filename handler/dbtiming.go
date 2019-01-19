@@ -9,40 +9,32 @@ import (
 	"net/http"
 )
 
-func GetTiming(w http.ResponseWriter, r *http.Request, idUser int) {
-	timing := model.Timing{}
+func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.TimingResponse){
 
-	selDB, err := dbConnector.Query("SELECT * FROM timing WHERE id_user=?", idUser)
+	var timingResponse model.TimingResponse
+
+	selDB, err := dbConnector.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
 
 	if err != nil {
 		panic(err.Error())
 	}
-
 	for selDB.Next() {
-		var idUser int
 		var morningTime, afternoonTime, eveningTime string
 		var morning, afternoon, evening byte
-		err = selDB.Scan(&idUser, &morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
+		err = selDB.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
 
 		if err != nil {
 			panic(err.Error())
 		}
 
-		timing.Id_User = idUser
-		timing.Morning = morning
-		timing.Afternoon = afternoon
-		timing.Evening = evening
-		timing.Morning_Time = morningTime
-		timing.Afternoon_Time = afternoonTime
-		timing.Evening_Time = eveningTime
+		timingResponse.Morning = morning
+		timingResponse.Afternoon = afternoon
+		timingResponse.Evening = evening
+		timingResponse.Morning_Time = morningTime
+		timingResponse.Afternoon_Time = afternoonTime
+		timingResponse.Evening_Time = eveningTime
 	}
-
-	output, err := json.Marshal(timing)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	w.Write(output)
+	return timingResponse
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {
@@ -73,9 +65,22 @@ func CreateTiming(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
 
+	var timingResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		timingResponse.Code = 500
+		timingResponse.Message = err.Error()
+	} else {
+		timingResponse.Code = 200
+		timingResponse.Message = "Timing creado con éxito"
 	}
+
+	output, err2 := json.Marshal(timingResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }
@@ -102,9 +107,23 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)
+
+	var timingResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		timingResponse.Code = 500
+		timingResponse.Message = err.Error()
+	} else {
+		timingResponse.Code = 200
+		timingResponse.Message = "Timing actualizado con éxito"
 	}
+
+	output, err := json.Marshal(timingResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer update.Close()
 }
@@ -117,10 +136,23 @@ func DeleteTiming(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
+
+	var timingResponse model.RequestResponse
 	if err != nil {
-		fmt.Println(err.Error())
-		panic(err.Error())
+		timingResponse.Code = 500
+		timingResponse.Message = err.Error()
+	} else {
+		timingResponse.Code = 200
+		timingResponse.Message = "Timing borrado con éxito"
 	}
+
+	output, err := json.Marshal(timingResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }

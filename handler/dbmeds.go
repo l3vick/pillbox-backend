@@ -12,7 +12,6 @@ import (
 	"github.com/l3vick/go-pharmacy/util"
 )
 
-
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 
 	pageNumber := r.URL.Query().Get("page")
@@ -45,10 +44,10 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		}
 
 		med := model.Med{
-			ID:   id,
-			Name: name,
-			Description:  description,
-			PharmacyID: pharmacyID,
+			ID:          id,
+			Name:        name,
+			Description: description,
+			PharmacyID:  pharmacyID,
 		}
 		meds = append(meds, &med)
 		page = util.GetPage(count, intPage)
@@ -64,7 +63,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Write(output)	
+	w.Write(output)
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +72,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.med WHERE id = "+ nID + "")
+	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.med WHERE id = " + nID + "")
 
 	fmt.Println(query)
 
@@ -120,13 +119,28 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name , med.Description, med.PharmacyID)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
+
+	var medsResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		medsResponse.Code = 500
+		medsResponse.Message = err.Error()
+	} else {
+		medsResponse.Code = 200
+		medsResponse.Message = "Med creado con éxito"
 	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+
 	defer insert.Close()
 }
 
@@ -154,7 +168,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	if med.Name != "" {
 		query = query + fmt.Sprintf("`name` = '%s'", med.Name)
 	}
-	
+
 	if med.Name != "" && med.Description != "" {
 		query = query + " , "
 	}
@@ -168,9 +182,23 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 
 	update, err := dbConnector.Query(query)
+
+	var medsResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		medsResponse.Code = 500
+		medsResponse.Message = err.Error()
+	} else {
+		medsResponse.Code = 200
+		medsResponse.Message = "Med actualizado con éxito"
 	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer update.Close()
 }
@@ -185,9 +213,22 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
 
+	var medsResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		medsResponse.Code = 500
+		medsResponse.Message = err.Error()
+	} else {
+		medsResponse.Code = 200
+		medsResponse.Message = "Med borrado con éxito"
 	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }
