@@ -9,32 +9,32 @@ import (
 	"net/http"
 )
 
-func GetTiming(w http.ResponseWriter, r *http.Request, idUser int) model.Timing {
-	timing := model.Timing{}
+func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.TimingResponse){
 
-	selDB, err := dbConnector.Query("SELECT * FROM timing WHERE id_user=?", idUser)
+	var timingResponse model.TimingResponse
 
-	if err != nil {
-		panic(err.Error())
-	}
-
-	var morningTime, afternoonTime, eveningTime string
-	var morning, afternoon, evening byte
-	err = selDB.Scan(&idUser, &morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
+	selDB, err := dbConnector.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
 
 	if err != nil {
 		panic(err.Error())
 	}
+	for selDB.Next() {
+		var morningTime, afternoonTime, eveningTime string
+		var morning, afternoon, evening byte
+		err = selDB.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
 
-	timing.Id_User = idUser
-	timing.Morning = morning
-	timing.Afternoon = afternoon
-	timing.Evening = evening
-	timing.Morning_Time = morningTime
-	timing.Afternoon_Time = afternoonTime
-	timing.Evening_Time = eveningTime
+		if err != nil {
+			panic(err.Error())
+		}
 
-	return timing
+		timingResponse.Morning = morning
+		timingResponse.Afternoon = afternoon
+		timingResponse.Evening = evening
+		timingResponse.Morning_Time = morningTime
+		timingResponse.Afternoon_Time = afternoonTime
+		timingResponse.Evening_Time = eveningTime
+	}
+	return timingResponse
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {
