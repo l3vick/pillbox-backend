@@ -37,32 +37,34 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		w.Write(output)
 	} else {
 		pharmacy := model.Pharmacy{}
-		var id, numberPhone, guard int
-		var name, address, scheduler, cif, mail string
-		err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
+		for selDB.Next() {
+			var id, numberPhone, guard int
+			var name, address, scheduler, cif, mail string
+			err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
 
-		pharmacy.ID = id
-		pharmacy.Cif = cif
-		pharmacy.Address = address
-		pharmacy.NumberPhone = numberPhone
-		pharmacy.Schedule = scheduler
-		pharmacy.Name = name
-		pharmacy.Guard = guard
-		pharmacy.Mail = mail
+			pharmacy.ID = id
+			pharmacy.Cif = cif
+			pharmacy.Address = address
+			pharmacy.NumberPhone = numberPhone
+			pharmacy.Schedule = scheduler
+			pharmacy.Name = name
+			pharmacy.Guard = guard
+			pharmacy.Mail = mail
 
-		if err != nil {
-			panic(err.Error())
-			http.Error(w, err.Error(), 500)
-			return
+			if err != nil {
+				panic(err.Error())
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			output, err := json.Marshal(pharmacy)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			w.Write(output)
 		}
-
-		output, err := json.Marshal(pharmacy)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		w.Write(output)
 	}
 	defer selDB.Close()
 }
@@ -82,32 +84,34 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 		output, _ := json.Marshal(checkMailResponse)
 		w.Write(output)
 	} else {
-		pharmacy := model.Pharmacy{}
-		var id int
-		var mail, password string
-		err = selDB.Scan(&id, &mail, &password)
+		pharmacy := model.PharmacyR{}
+		for selDB.Next() {
+			var id int
+			var mail, password string
+			err = selDB.Scan(&id, &mail, &password)
 
-		if err != nil {
-			panic(err.Error())
-			http.Error(w, err.Error(), 500)
-			return
+			if err != nil {
+				panic(err.Error())
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			pharmacy.ID = id
+			pharmacy.Mail = mail
+			if password == "" {
+				pharmacy.State = false
+			} else {
+				pharmacy.State = true
+			}
+
+			output, err := json.Marshal(pharmacy)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+
+			w.Write(output)
 		}
-
-		pharmacy.ID = id
-		pharmacy.Mail = mail
-		if password == "" {
-			pharmacy.State = false
-		} else {
-			pharmacy.State = true
-		}
-
-		output, err := json.Marshal(pharmacy)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		w.Write(output)
 	}
 	defer selDB.Close()
 }

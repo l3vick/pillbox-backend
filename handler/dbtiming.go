@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
 	"io/ioutil"
 	"net/http"
 )
 
-func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.TimingResponse){
-
+func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) model.TimingResponse {
 	var timingResponse model.TimingResponse
 
 	selDB, err := dbConnector.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
@@ -21,19 +21,26 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Tim
 	for selDB.Next() {
 		var morningTime, afternoonTime, eveningTime string
 		var morning, afternoon, evening byte
+		var morningBoolean, afternoonBoolean, eveningBoolean bool
 		err = selDB.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
 
 		if err != nil {
 			panic(err.Error())
 		}
 
-		timingResponse.Morning = morning
-		timingResponse.Afternoon = afternoon
-		timingResponse.Evening = evening
+		//TODO: Refactor, make func global
+		morningBoolean = util.ByteToBool(morning)
+		afternoonBoolean = util.ByteToBool(afternoon)
+		eveningBoolean = util.ByteToBool(evening)
+
+		timingResponse.Morning = morningBoolean
+		timingResponse.Afternoon = afternoonBoolean
+		timingResponse.Evening = eveningBoolean
 		timingResponse.Morning_Time = morningTime
 		timingResponse.Afternoon_Time = afternoonTime
 		timingResponse.Evening_Time = eveningTime
 	}
+
 	return timingResponse
 }
 
