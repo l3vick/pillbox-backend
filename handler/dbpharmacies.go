@@ -151,7 +151,6 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -178,7 +177,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = `%s` WHERE (`id` = '%s)", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail, nID)
+	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = '%s' WHERE (`id` = '%s')", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail, nID)
 
 	fmt.Println(query)
 	update, err := dbConnector.Query(query)

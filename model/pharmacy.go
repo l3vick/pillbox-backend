@@ -4,7 +4,7 @@ type Pharmacy struct {
 	ID          int    `json:"id"`
 	Cif         string `json:"cif"`
 	Address     string `json:"address"`
-	NumberPhone int    `json:"number_phone"`
+	NumberPhone int    `json:"phone_number"`
 	Schedule    string `json:"schedule"`
 	Name        string `json:"name"`
 	Guard       int    `json:"guard"`
