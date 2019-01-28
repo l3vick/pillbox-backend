@@ -91,9 +91,10 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 			err = selDB.Scan(&id, &mail, &password)
 
 			if err != nil {
-				panic(err.Error())
-				http.Error(w, err.Error(), 500)
-				return
+				checkMailResponse.Code = 500
+				checkMailResponse.Message = err.Error()
+				output, _ := json.Marshal(checkMailResponse)
+				w.Write(output)
 			}
 
 			pharmacy.ID = id

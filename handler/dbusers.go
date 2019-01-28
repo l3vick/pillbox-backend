@@ -85,11 +85,11 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 	elementsPage := intPage * 10
 	elem := strconv.Itoa(elementsPage)
 
-	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city, (SELECT COUNT(*)  from pharmacy_sh.user where id_pharmacy = " + nID + ") FROM pharmacy_sh.user where id_pharmacy = " + nID + " limit " + elem + ", 10")
+	query := fmt.Sprintf("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, zip, province, city, (SELECT COUNT(*) from pharmacy_sh.user where id_pharmacy = " + nID + ") FROM pharmacy_sh.user where id_pharmacy = " + nID + " limit " + elem + ", 10")
 
 	fmt.Println(query)
 
-	var users []*model.User
+	var users []*model.UserByPharmacy
 	var page model.Page
 
 	selDB, err := dbConnector.Query(query)
@@ -99,15 +99,15 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id, idPharmacy, age, phone_number, count int
+		var id, age, phone_number, count int
 		var name, surname, familyname, address, gender, mail, zip, province, city string
-		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &idPharmacy, &count, &zip, &province, &city)
+		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &zip, &province, &city, &count)
 
 		if err != nil {
 			panic(err.Error())
 		}
 
-		user := model.User{
+		user := model.UserByPharmacy{
 			ID:         id,
 			Name:       name,
 			SurName:    surname,
@@ -117,7 +117,6 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 			Phone:      phone_number,
 			Gender:     gender,
 			Mail:       mail,
-			IDPharmacy: idPharmacy,
 			Zip:        zip,
 			Province:   province,
 			City:       city,
@@ -128,7 +127,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 		page = util.GetPage(count, intPage)
 	}
 
-	response := model.UserResponse{
+	response := model.UserResponseByPharmacy{
 		Users: users,
 		Page:  page,
 	}
