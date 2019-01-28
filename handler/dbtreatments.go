@@ -10,9 +10,12 @@ import (
 	"github.com/l3vick/go-pharmacy/model"
 )
 
-func GetTreatments(w http.ResponseWriter, r *http.Request) {
+func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
+
 	var treatmentsResponse model.TreatmentsResponse
+
 	vars := mux.Vars(r)
+
 	nID := vars["id"]
 
 	treatmentsResponse = GetTreatment(nID, w, r)
@@ -28,11 +31,11 @@ func GetTreatments(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
-func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) model.TreatmentsResponse {
+func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) (model.TreatmentsResponse) {
 
 	var treatmentResponse model.TreatmentsResponse
 
-	query := fmt.Sprintf("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, morning, afternoon, evening, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID + "")
+	query := fmt.Sprintf("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, morning, afternoon, evening, start_treatment, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID +"")
 
 	fmt.Println(query)
 
@@ -49,33 +52,39 @@ func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) model.Trea
 	for selDB.Next() {
 		var id int
 		var morning, afternoon, evening byte
-		var name, end_treatment string
+		var name, start_treatment, end_treatment string
 
-		err = selDB.Scan(&id, &name, &morning, &afternoon, &evening, &end_treatment)
+		err = selDB.Scan(&id, &name, &morning, &afternoon, &evening, &start_treatment, &end_treatment)
 		if err != nil {
 			panic(err.Error())
 		}
 
 		if morning == 1 {
-			morningAux := model.Morning{
-				ID:   id,
+			morningAux := model.Morning {
+				ID: id,
 				Name: name,
+				StartTreatment: start_treatment,
+				EndTreatment: end_treatment,
 			}
 			mornings = append(mornings, &morningAux)
 		}
 
 		if afternoon == 1 {
-			afternoonAux := model.Afternoon{
-				ID:   id,
+			afternoonAux := model.Afternoon {
+				ID: id,
 				Name: name,
+				StartTreatment: start_treatment,
+				EndTreatment: end_treatment,
 			}
 			afternoons = append(afternoons, &afternoonAux)
 		}
 
 		if evening == 1 {
-			eveningAux := model.Evening{
-				ID:   id,
+			eveningAux := model.Evening {
+				ID: id,
 				Name: name,
+				StartTreatment: start_treatment,
+				EndTreatment: end_treatment,
 			}
 			evenings = append(evenings, &eveningAux)
 		}
@@ -94,49 +103,6 @@ func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) model.Trea
 	treatmentResponse.Evening = evenings
 
 	return treatmentResponse
-}
-
-func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) []*model.TreatmentCustomResponse {
-
-	var treatmentsCustomResponse []*model.TreatmentCustomResponse
-
-	query := fmt.Sprintf("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, end_treatment FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID + "")
-
-	fmt.Println(query)
-
-	selDB, err := dbConnector.Query(query)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer selDB.Close()
-
-	for selDB.Next() {
-		var id int
-		var alarm byte
-		var name, time, end_treatment string
-		err = selDB.Scan(&id, &name, &time, &alarm, &end_treatment)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		treatmentsCustom := model.TreatmentCustomResponse{
-			ID:    id,
-			Name:  name,
-			Time:  time,
-			Alarm: alarm,
-		}
-
-		treatmentsCustomResponse = append(treatmentsCustomResponse, &treatmentsCustom)
-	}
-
-	if err := selDB.Err(); err != nil {
-		panic(err.Error())
-	}
-
-	if err := selDB.Close(); err != nil {
-		panic(err.Error())
-	}
-	return treatmentsCustomResponse
 }
 
 func CreateTreatment(w http.ResponseWriter, r *http.Request) {

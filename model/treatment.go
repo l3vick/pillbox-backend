@@ -7,5 +7,6 @@ type Treatment struct {
 	Morning     	byte		`json:"morning"`
 	Afternoon      	byte		`json:"afternoon"`
 	Evening 		byte		`json:"evening"`
+	StartTreatment  string		`json:"start_treatment"`
 	EndTreatment    string		`json:"end_treatment"`
 }
