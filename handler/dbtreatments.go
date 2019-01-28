@@ -129,7 +129,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s')", treatment.IDUser, treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.EndTreatment)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `start_treatment`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s', '%s')", treatment.IDUser, treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.StartTreatment, treatment.EndTreatment)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -140,9 +140,74 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	nID := vars["id"]
 
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var treatment model.Treatment
+	err = json.Unmarshal(b, &treatment)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment` SET `id_med` = '%d', `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `start_treatment` = '%s', `end_treatment` = '%s' WHERE (`id` = '%s')", treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.StartTreatment, treatment.EndTreatment, nID)
+
+	fmt.Println(query)
+
+	update, err := dbConnector.Query(query)
+
+	var response model.RequestResponse
+	if err != nil {
+		response.Code = 500
+		response.Message = err.Error()
+	} else {
+		response.Code = 200
+		response.Message = "Med actualizado con éxito"
+	}
+
+	output, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+
+	defer update.Close()
 }
 
 func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	nID := vars["id"]
 
+	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment` WHERE (`id` = '%s')", nID)
+
+	fmt.Println(query)
+	insert, err := dbConnector.Query(query)
+
+	var response model.RequestResponse
+	if err != nil {
+		response.Code = 500
+		response.Message = err.Error()
+	} else {
+		response.Code = 200
+		response.Message = "Treatment borrado con éxito"
+	}
+
+	output, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+
+	defer insert.Close()
 }
