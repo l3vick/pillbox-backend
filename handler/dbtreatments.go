@@ -13,7 +13,7 @@ import (
 func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	var treatmentsResponse model.TreatmentsResponse
-	
+
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -27,7 +27,7 @@ func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	
+
 	w.Write(output)
 }
 
@@ -53,13 +53,11 @@ func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) (model.Tre
 		var id int
 		var morning, afternoon, evening byte
 		var name, start_treatment, end_treatment string
-		
+
 		err = selDB.Scan(&id, &name, &morning, &afternoon, &evening, &start_treatment, &end_treatment)
 		if err != nil {
 			panic(err.Error())
 		}
-
-
 
 		if morning == 1 {
 			morningAux := model.Morning {
@@ -93,11 +91,11 @@ func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) (model.Tre
 	}
 
 	if err := selDB.Err(); err != nil {
-        panic(err.Error())
+		panic(err.Error())
 	}
 
 	if err := selDB.Close(); err != nil {
-        panic(err.Error())
+		panic(err.Error())
 	}
 
 	treatmentResponse.Morning = mornings
