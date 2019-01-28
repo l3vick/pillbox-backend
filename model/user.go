@@ -22,7 +22,6 @@ type UserByPharmacy struct {
 	Name       string `json:"name"`
 	SurName    string `json:"surname"`
 	FamilyName string `json:"familyname"`
-	Password   string `json:"password"`
 	Age        int    `json:"age"`
 	Address    string `json:"address"`
 	Phone      int    `json:"phone_number"`
