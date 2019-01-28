@@ -219,12 +219,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		userResponse.Message = "User creado con éxito"
 	}
 
-	output, err2 := json.Marshal(userResponse)
-	if err2 != nil {
-		http.Error(w, err.Error(), 501)
-		return
-	}
-
 	w.Write(output)
 
 	defer insert.Close()
@@ -253,8 +247,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
-	w.Write(output)
 
 	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`user` SET `name` = '%s', `surname` = '%s', `familyname` = '%s', `age` = '%d', `address` = '%s', `phone_number` = '%d', `gender` = '%s', `mail` = '%s', `id_pharmacy` = '%d', `zip` = '%s', `province` = '%s', `city` = '%s' WHERE (`id` = '%s')", user.Name, user.SurName, user.FamilyName, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy, user.Zip, user.Province, user.City, nID)
 
