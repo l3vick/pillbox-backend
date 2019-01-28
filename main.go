@@ -36,6 +36,7 @@ func main() {
 	r.HandleFunc("/users", handler.CreateUser).Methods("POST")
 	r.HandleFunc("/users/{id}", handler.UpdateUser).Methods("PUT")
 	r.HandleFunc("/users/{id}", handler.DeleteUser).Methods("DELETE")
+	r.HandleFunc("/resetpassword/{id}", handler.ResetPassword).Methods("PUT")
 
 	r.HandleFunc("/pharmacies", handler.GetPharmacies).Methods("GET")
 	r.HandleFunc("/pharmacies/{id}/users", handler.GetUsersByPharmacyID).Methods("GET")

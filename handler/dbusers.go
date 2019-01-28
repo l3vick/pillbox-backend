@@ -301,3 +301,52 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	defer insert.Close()
 }
+
+func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	nID := vars["id"]
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var user model.ResetPassword
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	output, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`user` SET `password` = '%s' WHERE (`id` = '%s')", user.Password, nID)
+
+	fmt.Println(query)
+	update, err := dbConnector.Query(query)
+
+	var resetPasswordResponse model.RequestResponse
+	if err != nil {
+		resetPasswordResponse.Code = 500
+		resetPasswordResponse.Message = err.Error()
+	} else {
+		resetPasswordResponse.Code = 200
+		resetPasswordResponse.Message = "Password actualizada con éxito"
+	}
+
+	output, err2 := json.Marshal(resetPasswordResponse)
+	if err2 != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+
+	defer update.Close()
+}
