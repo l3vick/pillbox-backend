@@ -219,6 +219,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		userResponse.Message = "User creado con éxito"
 	}
 
+	output, err2 := json.Marshal(userResponse)
+	if err != nil {
+		http.Error(w, err2.Error(), 501)
+		return
+	}
+
 	w.Write(output)
 
 	defer insert.Close()
