@@ -2,7 +2,7 @@ package model
 
 
 type TreatmentsResponse struct {
-	Morning 				[]*Morning						`json:"morning"`	
+	Morning 				[]*Morning						`json:"morning"`
 	Afternoon				[]*Afternoon					`json:"afternoon"`
 	Evening					[]*Evening						`json:"evening"`
 	TreatmentsCustom   		[]*TreatmentCustomResponse		`json:"treatments_custom"`
@@ -41,10 +41,10 @@ type TreatmentCustomResponse struct {
 }
 
 type TimingResponse struct {
-	Morning         byte	`json:"morning"`
-	Afternoon       byte	`json:"afternoon"`
-	Evening     	byte	`json:"evening"`
-	Morning_Time    string 	`json:"morning_time"`
-	Afternoon_Time	string 	`json:"afternoon_time"`
-	Evening_Time	string 	`json:"evening_time"`
+	Morning        bool   `json:"morning"`
+	Afternoon      bool   `json:"afternoon"`
+	Evening        bool   `json:"evening"`
+	Morning_Time   string `json:"morning_time"`
+	Afternoon_Time string `json:"afternoon_time"`
+	Evening_Time   string `json:"evening_time"`
 }
