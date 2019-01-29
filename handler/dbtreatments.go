@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
+	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
@@ -113,7 +113,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	// Unmarshal
+	
 	var treatment model.Treatment
 	err = json.Unmarshal(b, &treatment)
 	if err != nil {
@@ -124,15 +124,33 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `start_treatment`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s', '%s')", treatment.IDUser, treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := dbConnector.Exec(query)
+	var response model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		response.Code = 500
+		response.Message = err.Error()
+	} else {
+		count, err := insert.RowsAffected()  
+		if err != nil {  
+	    	me, ok := err.(*mysql.MySQLError)
+			if ok {
+				response.Code = 500
+				response.Message = fmt.Sprintf("Type: %d.  Message: %s ", me.Number, me.Message)
+			}
+		} else {		
+			if (count == 0){
+				response.Code = 404
+				response.Message = "Treatment created error"		
+			} else {
+				response.Code = 201
+				response.Message = "Treatment created success"		
+			}
+		}
 	}
-	defer insert.Close()
 
-	output, err := json.Marshal(treatment)
+	output, err := json.Marshal(response)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), 501)
 		return
 	}
 
@@ -151,6 +169,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var treatment model.Treatment
+
 	err = json.Unmarshal(b, &treatment)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -161,15 +180,29 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	update, err := dbConnector.Query(query)
+	update, err := dbConnector.Exec(query)
 
 	var response model.RequestResponse
 	if err != nil {
 		response.Code = 500
 		response.Message = err.Error()
 	} else {
-		response.Code = 200
-		response.Message = "Treatment actualizado con éxito"
+		count, err := update.RowsAffected()  
+		if err != nil {  
+	    	me, ok := err.(*mysql.MySQLError)
+			if ok {
+				response.Code = 500
+				response.Message = fmt.Sprintf("Type: %d.  Message: %s ", me.Number, me.Message)
+			}
+		} else {		
+			if (count == 0){
+				response.Code = 404
+				response.Message = "Treatment not found"		
+			} else {
+				response.Code = 201
+				response.Message = "Treatment updated success"		
+			}
+		}
 	}
 
 	output, err := json.Marshal(response)
@@ -179,8 +212,6 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
-
-	defer update.Close()
 }
 
 func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
@@ -188,17 +219,30 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 	nID := vars["id"]
 
 	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment` WHERE (`id` = '%s')", nID)
-
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := dbConnector.Exec(query)
 
 	var response model.RequestResponse
 	if err != nil {
-		response.Code = 500
-		response.Message = err.Error()
+		me, ok := err.(*mysql.MySQLError)
+		if ok {
+			response.Code = 500
+			response.Message = fmt.Sprintf("Type: %d.  Message: %s ", me.Number, me.Message)
+		}
 	} else {
-		response.Code = 200
-		response.Message = "Treatment borrado con éxito"
+		count, err := insert.RowsAffected()  
+		if err != nil {  
+	    	fmt.Println(err.Error())	
+		} else {		
+			if (count == 0){
+				response.Code = 404
+				response.Message = "Treatment not found"		
+			} else {
+			
+				response.Code = 201
+				response.Message = "Treatment deleted success"		
+			}
+		}
 	}
 
 	output, err := json.Marshal(response)
@@ -209,5 +253,4 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(output)
 
-	defer insert.Close()
 }
