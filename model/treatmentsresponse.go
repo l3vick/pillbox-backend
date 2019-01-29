@@ -32,9 +32,10 @@ type Evening struct {
 
 type TreatmentCustomResponse struct {
 	ID				int		`json:"id"`
+	IDMed			int		`json:"id_med"`
 	Name			string	`json:"name"`
 	Time			string	`json:"time"`
-	Alarm			byte	`json:"alarm"`
+	Alarm			bool	`json:"alarm"`
 	StartTreatment 	string	`json:"start_treatment"`
 	EndTreatment	string	`json:"end_treatment"`
 	Period			int		`json:"period"`
