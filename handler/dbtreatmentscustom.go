@@ -66,12 +66,21 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Unmarshal
-	var treatment model.Treatment
+	var treatment model.TreatmentCustom
 	err = json.Unmarshal(b, &treatment)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment_custom` (`id_user`, `id_med`, `time`, `alarm`, `start_treatment`, `end_treatment`, `period`)  VALUES('%d', '%d', '%s', '%d', '%s', '%s', '%d')", treatment.IDUser, treatment.IDMed, treatment.Time, util.BoolToByte(treatment.Alarm), treatment.StartTreatment, treatment.EndTreatment, treatment.Period)
+
+	fmt.Println(query)
+	insert, err := dbConnector.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer insert.Close()
 
 	output, err := json.Marshal(treatment)
 	if err != nil {
@@ -80,14 +89,6 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `start_treatment`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s', '%s')", treatment.IDUser, treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.StartTreatment, treatment.EndTreatment)
-
-	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer insert.Close()
 }
 
 func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
@@ -101,14 +102,15 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var treatment model.Treatment
+	var treatment model.TreatmentCustom
+
 	err = json.Unmarshal(b, &treatment)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment` SET `id_med` = '%d', `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `start_treatment` = '%s', `end_treatment` = '%s' WHERE (`id` = '%s')", treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.StartTreatment, treatment.EndTreatment, nID)
+	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment_custom` SET `id_med` = '%d', `time` = '%s', `alarm` = '%d', `start_treatment` = '%s', `end_treatment` = '%s', `period` = '%d' WHERE (`id` = '%s')", treatment.IDMed, treatment.Time, treatment.Alarm, treatment.StartTreatment, treatment.EndTreatment, treatment.Period, nID)
 
 	fmt.Println(query)
 
@@ -120,7 +122,7 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 		response.Message = err.Error()
 	} else {
 		response.Code = 200
-		response.Message = "Treatment actualizado con éxito"
+		response.Message = "Treatment custom actualizado con éxito"
 	}
 
 	output, err := json.Marshal(response)
@@ -138,7 +140,7 @@ func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment` WHERE (`id` = '%s')", nID)
+	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment_custom` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -149,7 +151,7 @@ func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 		response.Message = err.Error()
 	} else {
 		response.Code = 200
-		response.Message = "Treatment borrado con éxito"
+		response.Message = "Treatment custom borrado con éxito"
 	}
 
 	output, err := json.Marshal(response)

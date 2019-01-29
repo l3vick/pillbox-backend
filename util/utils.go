@@ -48,3 +48,10 @@ func ByteToBool(b byte) bool {
 	}
 	return false
 }
+
+func BoolToByte(b bool) byte {
+	if b == true {
+		return 1
+	}
+	return 0
+}

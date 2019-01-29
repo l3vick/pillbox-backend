@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
 )
 
 func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +19,7 @@ func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	treatmentsResponse = GetTreatment(nID, w, r)
+	treatmentsResponse = GetTreatments(nID, w, r)
 	treatmentsResponse.TreatmentsCustom = GetTreatmentsCustom(nID, w, r)
 	treatmentsResponse.Timing = GetTiming(nID, w, r)
 
@@ -31,7 +32,7 @@ func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
-func GetTreatment(nID string, w http.ResponseWriter, r *http.Request) (model.TreatmentsResponse) {
+func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) (model.TreatmentsResponse) {
 
 	var treatmentResponse model.TreatmentsResponse
 
@@ -120,14 +121,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := json.Marshal(treatment)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	w.Write(output)
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `start_treatment`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s', '%s')", treatment.IDUser, treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.StartTreatment, treatment.EndTreatment)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `start_treatment`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s', '%s')", treatment.IDUser, treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
@@ -135,6 +129,14 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 	defer insert.Close()
+
+	output, err := json.Marshal(treatment)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Write(output)
 }
 
 func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +157,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment` SET `id_med` = '%d', `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `start_treatment` = '%s', `end_treatment` = '%s' WHERE (`id` = '%s')", treatment.IDMed, treatment.Morning, treatment.Afternoon, treatment.Evening, treatment.StartTreatment, treatment.EndTreatment, nID)
+	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment` SET `id_med` = '%d', `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `start_treatment` = '%s', `end_treatment` = '%s' WHERE (`id` = '%s')", treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment, nID)
 
 	fmt.Println(query)
 
@@ -167,7 +169,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		response.Message = err.Error()
 	} else {
 		response.Code = 200
-		response.Message = "Med actualizado con éxito"
+		response.Message = "Treatment actualizado con éxito"
 	}
 
 	output, err := json.Marshal(response)

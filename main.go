@@ -50,6 +50,10 @@ func main() {
 	r.HandleFunc("/treatments/{id}", handler.UpdateTreatment).Methods("PUT")
 	r.HandleFunc("/treatments/{id}", handler.DeleteTreatment).Methods("DELETE")
 
+	r.HandleFunc("/treatments/custom", handler.CreateTreatmentCustom).Methods("POST")
+	r.HandleFunc("/treatments/custom/{id}", handler.UpdateTreatmentCustom).Methods("PUT")
+	r.HandleFunc("/treatments/custom/{id}", handler.DeleteTreatmentCustom).Methods("DELETE")
+
 	r.HandleFunc("/timing", handler.CreateTiming).Methods("POST")
 	r.HandleFunc("/timing/{id}", handler.UpdateTiming).Methods("PUT")
 	r.HandleFunc("/timing/{id}", handler.DeleteTiming).Methods("DELETE")
