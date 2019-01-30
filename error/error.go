@@ -22,19 +22,19 @@ func HandleMysqlError(err error) model.RequestResponse {
 	return response
 }
 
-func HandleEmptyRowsError(result sql.Result, queryType string) model.RequestResponse{
+func HandleEmptyRowsError(result sql.Result, queryType string, title string) model.RequestResponse{
 	var response model.RequestResponse
-	count, err := result.RowsAffected()  
+	count, err := result.RowsAffected()
 	if err != nil {  
 		response.Code = 405
 		response.Message = fmt.Sprintf("Mysql Error: %s", err.Error())		
 	} else {		
 		if (count == 0){
 			response.Code = 404
-			response.Message = fmt.Sprintf("%s Treatment error", queryType)		
+			response.Message = fmt.Sprintf("%s %s error", queryType, title)	
 		} else {
 			response.Code = 201
-			response.Message = fmt.Sprintf("%s Treatment success", queryType)		
+			response.Message = fmt.Sprintf("%s %s success", queryType, title)		
 		}
 	}
 	return response

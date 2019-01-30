@@ -11,6 +11,8 @@ import (
 	"github.com/l3vick/go-pharmacy/error"
 )
 
+const title string = "Treatment"
+
 func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	var treatmentsResponse model.TreatmentsResponse
@@ -122,13 +124,12 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 	
-
 	var response model.RequestResponse
 
 	if err != nil {
 		response = error.HandleMysqlError(err)
 	} else {
-		response = error.HandleEmptyRowsError(insert, error.Insert)
+		response = error.HandleEmptyRowsError(insert, error.Insert, title)
 	}
 
 	output, err := json.Marshal(response)
@@ -171,7 +172,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(err)
 	} else {
-		response = error.HandleEmptyRowsError(update, error.Update)
+		response = error.HandleEmptyRowsError(update, error.Update, title)
 	}
 
 	output, err := json.Marshal(response)
@@ -200,7 +201,7 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(err)
 	} else {
-		response = error.HandleEmptyRowsError(delete, error.Delete)
+		response = error.HandleEmptyRowsError(delete, error.Delete, title)
 	}
 
 	output, err := json.Marshal(response)
