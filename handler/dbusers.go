@@ -356,3 +356,68 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 
 	defer update.Close()
 }
+
+func FilterUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	nID := vars["filter"]
+
+	pageNumber := r.URL.Query().Get("page")
+	intPage, err := strconv.Atoi(pageNumber)
+	elementsPage := intPage * 10
+	elem := strconv.Itoa(elementsPage)
+
+	query := fmt.Sprintf("SELECT * (SELECT COUNT(*) from pharmacy_sh.user WHERE (name LIKE" + nID + ") OR (surname LIKE" + nID + ") OR (familyname LIKE" + nID + ") OR (age LIKE" + nID + ") OR (address LIKE" + nID + ") OR (phone_number LIKE" + nID + ") OR (mail LIKE" + nID + ") OR (zip LIKE" + nID + ") OR (province LIKE" + nID + ") OR (city LIKE" + nID + ")) as count FROM user LIMIT " + elem + ",10 WHERE (name LIKE" + nID + ") OR (surname LIKE" + nID + ") OR (familyname LIKE" + nID + ") OR (age LIKE" + nID + ") OR (address LIKE" + nID + ") OR (phone_number LIKE" + nID + ") OR (mail LIKE" + nID + ") OR (zip LIKE" + nID + ") OR (province LIKE" + nID + ") OR (city LIKE" + nID + ")")
+
+	fmt.Println(query)
+
+	var users []*model.UserByPharmacy
+	var page model.Page
+
+	selDB, err := dbConnector.Query(query)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for selDB.Next() {
+		var id, age, phone_number, count int
+		var name, surname, familyname, address, gender, mail, zip, province, city string
+		err = selDB.Scan(&id, &name, &surname, &familyname, &age, &address, &phone_number, &gender, &mail, &zip, &province, &city, &count)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		user := model.UserByPharmacy{
+			ID:         id,
+			Name:       name,
+			SurName:    surname,
+			FamilyName: familyname,
+			Age:        age,
+			Address:    address,
+			Phone:      phone_number,
+			Gender:     gender,
+			Mail:       mail,
+			Zip:        zip,
+			Province:   province,
+			City:       city,
+		}
+
+		users = append(users, &user)
+
+		page = util.GetPage(count, intPage)
+	}
+
+	response := model.UserResponseByPharmacy{
+		Users: users,
+		Page:  page,
+	}
+
+	output, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Write(output)
+}
