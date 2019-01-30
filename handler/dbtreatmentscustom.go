@@ -110,7 +110,7 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment_custom` SET `id_med` = '%d', `time` = '%s', `alarm` = '%d', `start_treatment` = '%s', `end_treatment` = '%s', `period` = '%d' WHERE (`id` = '%s')", treatment.IDMed, treatment.Time, treatment.Alarm, treatment.StartTreatment, treatment.EndTreatment, treatment.Period, nID)
+	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment_custom` SET `id_med` = '%d', `time` = '%s', `alarm` = '%d', `start_treatment` = '%s', `end_treatment` = '%s', `period` = '%d' WHERE (`id` = '%s')", treatment.IDMed, treatment.Time, util.BoolToByte(treatment.Alarm), treatment.StartTreatment, treatment.EndTreatment, treatment.Period, nID)
 
 	fmt.Println(query)
 
