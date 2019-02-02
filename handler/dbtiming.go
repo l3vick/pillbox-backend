@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/db"
 	"io/ioutil"
 	"net/http"
 )
@@ -13,7 +14,7 @@ import (
 func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) model.TimingResponse {
 	var timingResponse model.TimingResponse
 
-	selDB, err := dbConnector.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
+	selDB, err := db.DB.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
 
 	if err != nil {
 		panic(err.Error())
@@ -70,7 +71,7 @@ func CreateTiming(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`timing` (`id_user`, `morning`, `afternoon`, `evening`, `morning_time`, `afternoon_time`, `evening_time`)  VALUES('%d', '%d', '%d', '%d', '%s', '%s', '%s')", timing.Id_User, timing.Morning, timing.Afternoon, timing.Evening, timing.Morning_Time, timing.Afternoon_Time, timing.Evening_Time)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var timingResponse model.RequestResponse
 	if err != nil {
@@ -113,7 +114,7 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`timing` SET `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `morning_time` = '%s', `afternoon_time` = '%s', `evening_time` = '%s' WHERE (`id_user` = '%s')", timing.Morning, timing.Afternoon, timing.Evening, timing.Morning_Time, timing.Afternoon_Time, timing.Evening_Time, nID)
 
 	fmt.Println(query)
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var timingResponse model.RequestResponse
 	if err != nil {
@@ -142,7 +143,7 @@ func DeleteTiming(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`timing` WHERE (`id_user` = '%s')", nID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var timingResponse model.RequestResponse
 	if err != nil {

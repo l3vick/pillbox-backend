@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/db"
 )
 
 func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]*model.TreatmentCustomResponse){
@@ -19,7 +20,7 @@ func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]
 
 	fmt.Println(query)
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -76,7 +77,7 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment_custom` (`id_user`, `id_med`, `time`, `alarm`, `start_treatment`, `end_treatment`, `period`)  VALUES('%d', '%d', '%s', '%d', '%s', '%s', '%d')", treatment.IDUser, treatment.IDMed, treatment.Time, util.BoolToByte(treatment.Alarm), treatment.StartTreatment, treatment.EndTreatment, treatment.Period)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -114,7 +115,7 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var response model.RequestResponse
 	if err != nil {
@@ -143,7 +144,7 @@ func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment_custom` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var response model.RequestResponse
 	if err != nil {

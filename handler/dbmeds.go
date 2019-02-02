@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/db"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
 )
@@ -30,7 +31,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 
 	var page model.Page
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -76,7 +77,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -122,7 +123,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var medsResponse model.RequestResponse
 	if err != nil {
@@ -181,7 +182,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var medsResponse model.RequestResponse
 	if err != nil {
@@ -211,7 +212,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`med` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var medsResponse model.RequestResponse
 	if err != nil {

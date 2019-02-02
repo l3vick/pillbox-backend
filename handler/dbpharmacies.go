@@ -3,12 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/db"
 )
 
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +29,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 
 	var page model.Page
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -71,7 +73,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	selDB, err := dbConnector.Query("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy WHERE id=?", nID)
+	selDB, err := db.DB.Query("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy WHERE id=?", nID)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -128,7 +130,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`pharmacy` (`name`, `cif`, `address`, `phone_number`, `schedule`, `guard`, `password`, `mail`)  VALUES('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s')", pharmacy.Name, pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Guard, pharmacy.Password, pharmacy.Mail)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var pharmacyResponse model.RequestResponse
 	if err != nil {
@@ -171,7 +173,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`pharmacy` SET  `cif` = '%s', `address` = '%s', `phone_number` = '%d', `schedule` = '%s', `name` = '%s', `guard` = '%d', `password` = '%s', `mail` = '%s' WHERE (`id` = '%s')", pharmacy.Cif, pharmacy.Address, pharmacy.NumberPhone, pharmacy.Schedule, pharmacy.Name, pharmacy.Guard, pharmacy.Password, pharmacy.Mail, nID)
 
 	fmt.Println(query)
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var pharmacyResponse model.RequestResponse
 	if err != nil {
@@ -201,7 +203,7 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var pharmacyResponse model.RequestResponse
 	if err != nil {

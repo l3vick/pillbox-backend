@@ -3,21 +3,25 @@ package db
 import  "database/sql"
 
 
-var db *sql.DB
+var DB *sql.DB
+
+func SetDB(db *sql.DB) {
+	DB = db
+}
 
 
 func GetDB() *sql.DB{
-	return db
+	return DB
 }
 
 func ConectDB() {
 	var err error
-	db, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"pharmacy_sh")
+	DB, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"pharmacy_sh")
 	if err != nil {
 		panic(err.Error()) 
 	}
 }
 
 func CloseDB() {
-	defer db.Close()
+	defer DB.Close()
 }

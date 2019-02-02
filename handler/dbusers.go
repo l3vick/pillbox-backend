@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/db"
 )
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +27,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	var page model.Page
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 
 	if err != nil {
 		panic(err.Error())
@@ -92,7 +93,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 	var users []*model.UserByPharmacy
 	var page model.Page
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 
 	if err != nil {
 		panic(err.Error())
@@ -146,7 +147,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	nID := vars["id"]
 	user := model.User{}
 
-	selDB, err := dbConnector.Query("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city FROM user WHERE id=?", nID)
+	selDB, err := db.DB.Query("SELECT id, name, surname, familyname, age, address, phone_number, gender, mail, id_pharmacy, zip, province, city FROM user WHERE id=?", nID)
 
 	if err != nil {
 		panic(err.Error())
@@ -208,7 +209,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`user` (`name`, `surname`, `familyname`, `password`, `age`, `address`, `phone_number`, `gender`, `mail`, `zip`, `province`, `city`, `id_pharmacy`)  VALUES('%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d')", user.Name, user.SurName, user.FamilyName, user.Password, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.Zip, user.Province, user.City, user.IDPharmacy)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var userResponse model.RequestResponse
 	if err != nil {
@@ -257,7 +258,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`user` SET `name` = '%s', `surname` = '%s', `familyname` = '%s', `age` = '%d', `address` = '%s', `phone_number` = '%d', `gender` = '%s', `mail` = '%s', `id_pharmacy` = '%d', `zip` = '%s', `province` = '%s', `city` = '%s' WHERE (`id` = '%s')", user.Name, user.SurName, user.FamilyName, user.Age, user.Address, user.Phone, user.Gender, user.Mail, user.IDPharmacy, user.Zip, user.Province, user.City, nID)
 
 	fmt.Println(query)
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var userResponse model.RequestResponse
 	if err != nil {
@@ -286,7 +287,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`user` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var userResponse model.RequestResponse
 	if err != nil {
@@ -335,7 +336,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`user` SET `password` = '%s' WHERE (`id` = '%s')", user.Password, nID)
 
 	fmt.Println(query)
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var resetPasswordResponse model.RequestResponse
 	if err != nil {
@@ -373,7 +374,7 @@ func FilterUser(w http.ResponseWriter, r *http.Request) {
 	var users []*model.UserByPharmacy
 	var page model.Page
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 
 	if err != nil {
 		panic(err.Error())

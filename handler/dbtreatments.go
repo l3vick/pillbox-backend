@@ -10,6 +10,7 @@ import (
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
 	"github.com/l3vick/go-pharmacy/error"
+	"github.com/l3vick/go-pharmacy/db"
 )
 
 const title string = "Treatment"
@@ -44,7 +45,7 @@ func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) (model.Tr
 
 	fmt.Println(query)
 
-	selct, err := dbConnector.Query(query)
+	selct, err := db.DB.Query(query)
 
 	if err != nil {
 		panic(err.Error())
@@ -120,7 +121,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 
 	query := "INSERT INTO pharmacy_sh.treatment (id_user, id_med, morning, afternoon, evening, start_treatment, end_treatment) VALUES( ?, ?, ?, ?, ?, ?, ?)"
 
-	insert, err := dbConnector.Prepare(query)
+	insert, err := db.DB.Prepare(query)
 
 	util.CheckErr(err)
 
@@ -169,7 +170,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 
 	query := "UPDATE pharmacy_sh.treatment SET id_med = ?, morning = ?, afternoon = ?, evening = ?, start_treatment = ?, end_treatment = ? WHERE (id = ?)"
 
-	update, err := dbConnector.Prepare(query)
+	update, err := db.DB.Prepare(query)
 
 	util.CheckErr(err)
 
@@ -200,7 +201,7 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 
 	query := "DELETE FROM pharmacy_sh.treatment WHERE (id = ?)"
 
-	delete, err := dbConnector.Prepare(query)
+	delete, err := db.DB.Prepare(query)
 
 	util.CheckErr(err)
 

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/l3vick/go-pharmacy/db"
 	"github.com/l3vick/go-pharmacy/model"
 )
 
@@ -27,7 +28,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy_sh.pharmacy WHERE mail = '%s' and password = '%s'", user.Mail, user.Password)
 
 	fmt.Println(query)
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 
 	var checkMailResponse model.RequestResponse
 	if err != nil {
@@ -52,9 +53,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			pharmacy.Mail = mail
 
 			if err != nil {
-				panic(err.Error())
 				http.Error(w, err.Error(), 500)
-				return
+				panic(err.Error())
 			}
 
 			output, err := json.Marshal(pharmacy)
@@ -75,7 +75,7 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("SELECT id, mail, password FROM pharmacy_sh.pharmacy WHERE mail = '%s'", mailRequest)
 	fmt.Println(query)
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 
 	var checkMailResponse model.RequestResponse
 	if err != nil {
