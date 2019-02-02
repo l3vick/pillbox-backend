@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
@@ -12,6 +13,7 @@ import (
 )
 
 const title string = "Treatment"
+var response model.RequestResponse
 
 func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
@@ -116,20 +118,24 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment` (`id_user`, `id_med`, `morning`, `afternoon`, `evening`, `start_treatment`, `end_treatment`)  VALUES('%d', '%d', '%d', '%d', '%d', '%s', '%s')", treatment.IDUser, treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment)
+	query := "INSERT INTO pharmacy_sh.treatment (id_user, id_med, morning, afternoon, evening, start_treatment, end_treatment) VALUES( ?, ?, ?, ?, ?, ?, ?)"
 
-	fmt.Println(query)
-	insert, err := dbConnector.Exec(query)
+	insert, err := dbConnector.Prepare(query)
+
+	util.CheckErr(err)
+
+	insertExec, err := insert.Exec(treatment.IDUser, treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment)
+
+	util.CheckErr(err)
+
 	if err != nil {
 		panic(err.Error())
 	}
-	
-	var response model.RequestResponse
 
 	if err != nil {
 		response = error.HandleMysqlError(err)
 	} else {
-		response = error.HandleEmptyRowsError(insert, error.Insert, title)
+		response = error.HandleEmptyRowsError(insertExec, error.Insert, title)
 	}
 
 	output, err := json.Marshal(response)
@@ -161,18 +167,20 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment` SET `id_med` = '%d', `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `start_treatment` = '%s', `end_treatment` = '%s' WHERE (`id` = '%s')", treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment, nID)
+	query := "UPDATE pharmacy_sh.treatment SET id_med = ?, morning = ?, afternoon = ?, evening = ?, start_treatment = ?, end_treatment = ? WHERE (id = ?)"
 
-	fmt.Println(query)
+	update, err := dbConnector.Prepare(query)
 
-	update, err := dbConnector.Exec(query)
+	util.CheckErr(err)
 
-	var response model.RequestResponse
+	updateExec, err := update.Exec(treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment, nID)
+
+	util.CheckErr(err)
 
 	if err != nil {
 		response = error.HandleMysqlError(err)
 	} else {
-		response = error.HandleEmptyRowsError(update, error.Update, title)
+		response = error.HandleEmptyRowsError(updateExec, error.Update, title)
 	}
 
 	output, err := json.Marshal(response)
@@ -190,18 +198,20 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment` WHERE (`id` = '%s')", nID)
+	query := "DELETE FROM pharmacy_sh.treatment WHERE (id = ?)"
 
-	fmt.Println(query)
+	delete, err := dbConnector.Prepare(query)
 
-	delete, err := dbConnector.Exec(query)
+	util.CheckErr(err)
 
-	var response model.RequestResponse
+	deleteExec, err := delete.Exec(nID)
+
+	util.CheckErr(err)
 
 	if err != nil {
 		response = error.HandleMysqlError(err)
 	} else {
-		response = error.HandleEmptyRowsError(delete, error.Delete, title)
+		response = error.HandleEmptyRowsError(deleteExec, error.Delete, title)
 	}
 
 	output, err := json.Marshal(response)

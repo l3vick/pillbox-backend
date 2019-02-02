@@ -55,3 +55,9 @@ func BoolToByte(b bool) byte {
 	}
 	return 0
 }
+
+func CheckErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
