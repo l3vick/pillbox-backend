@@ -23,8 +23,6 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", root).Methods("GET")
 
-	db.SetDB(db.GetDB())
-
 	r.HandleFunc("/meds", handler.GetMeds).Methods("GET")
 	r.HandleFunc("/meds/{id}", handler.GetMed).Methods("GET")
 	r.HandleFunc("/meds", handler.CreateMed).Methods("POST")

@@ -1,19 +1,20 @@
 package handler
 
 import (
-	"encoding/json"
+	/*"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/ioutil"*/
 	"net/http"
-	"strconv"
+	/*"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
-	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/db"*/
 )
 
 func GetPharmacies(w http.ResponseWriter, r *http.Request) {
+	/*
 	pageNumber := r.URL.Query().Get("page")
 
 	intPage, err := strconv.Atoi(pageNumber)
@@ -66,10 +67,11 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(output)
+	w.Write(output)*/
 }
 
 func GetPharmacy(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -103,9 +105,11 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	*/
 }
 
 func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
+	/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -150,9 +154,11 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
 
 func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -193,9 +199,11 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -223,4 +231,5 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }

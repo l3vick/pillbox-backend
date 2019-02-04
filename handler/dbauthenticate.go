@@ -1,16 +1,17 @@
 package handler
 
 import (
-	"encoding/json"
+/*	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/ioutil"*/
 	"net/http"
 
-	"github.com/l3vick/go-pharmacy/db"
-	"github.com/l3vick/go-pharmacy/model"
+	/*"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/model"*/
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -67,9 +68,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	defer selDB.Close()
+	*/
 }
 
 func CheckMail(w http.ResponseWriter, r *http.Request) {
+	/*
 	mailRequest := r.URL.Query().Get("mail")
 
 	query := fmt.Sprintf("SELECT id, mail, password FROM pharmacy_sh.pharmacy WHERE mail = '%s'", mailRequest)
@@ -115,4 +118,5 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	defer selDB.Close()
+	*/
 }

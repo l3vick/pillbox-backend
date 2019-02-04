@@ -1,21 +1,23 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
+	/*
+	"fmt"
 	"io/ioutil"
 	"encoding/json"
 
-	"github.com/gorilla/mux"
+	"github.com/gorilla/mux"*/
 	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"
-	"github.com/l3vick/go-pharmacy/db"
+	/*"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/db"*/
 )
 
 func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]*model.TreatmentCustomResponse){
 
 	var treatmentsCustomResponse []*model.TreatmentCustomResponse
 
+	/*
 	query := fmt.Sprintf("SELECT id, id_med, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, start_treatment, end_treatment, period FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID +"")
 
 	fmt.Println(query)
@@ -56,10 +58,13 @@ func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]
 	if err := selDB.Close(); err != nil {
 		panic(err.Error())
 	}
+
+	*/
 	return treatmentsCustomResponse
 }
 
 func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
+	/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -90,9 +95,11 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	*/
 }
 
 func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -135,9 +142,11 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -164,4 +173,5 @@ func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }

@@ -1,19 +1,21 @@
 package handler
 
 import (
-	"encoding/json"
+	"net/http"
+	/*"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
+	
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/db"
 	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/util"*/
 )
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
+	/*
 
 	pageNumber := r.URL.Query().Get("page")
 
@@ -65,10 +67,11 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(output)
+	*/
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -102,10 +105,11 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(output)
+	*/
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -143,10 +147,11 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
 
 func UpdateMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -202,10 +207,11 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -232,4 +238,5 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }

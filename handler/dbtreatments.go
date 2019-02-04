@@ -6,8 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	
-	"github.com/gorilla/mux"
+	
 	"github.com/l3vick/go-pharmacy/model"
+	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/util"
 	"github.com/l3vick/go-pharmacy/error"
 	"github.com/l3vick/go-pharmacy/db"
@@ -17,6 +18,7 @@ const title string = "Treatment"
 var response model.RequestResponse
 
 func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
+	/*
 
 	var treatmentsResponse model.TreatmentsResponse
 
@@ -35,12 +37,13 @@ func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	*/
 }
 
 func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) (model.TreatmentsResponse) {
 
 	var treatmentResponse model.TreatmentsResponse
-
+/*
 	query := fmt.Sprintf("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, morning, afternoon, evening, start_treatment, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID +"")
 
 	fmt.Println(query)
@@ -100,11 +103,12 @@ func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) (model.Tr
 	treatmentResponse.Morning = mornings
 	treatmentResponse.Afternoon = afternoons
 	treatmentResponse.Evening = evenings
-
+*/
 	return treatmentResponse
 }
 
 func CreateTreatment(w http.ResponseWriter, r *http.Request) {
+	/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -146,21 +150,25 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	*/
 }
 
 func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
 	
 	nID := vars["id"]
 
 	b, err := ioutil.ReadAll(r.Body)
+
 	defer r.Body.Close()
+
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	var treatment model.Treatment
+	var treatment model.TreatmentDB
 
 	err = json.Unmarshal(b, &treatment)
 	if err != nil {
@@ -168,20 +176,16 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := "UPDATE pharmacy_sh.treatment SET id_med = ?, morning = ?, afternoon = ?, evening = ?, start_treatment = ?, end_treatment = ? WHERE (id = ?)"
+	fmt.Println(treatment)
 
-	update, err := db.DB.Prepare(query)
+	db := db.DB.Table("treatment").Where("id = ?", nID).Updates(&treatment)
 
-	util.CheckErr(err)
-
-	updateExec, err := update.Exec(treatment.IDMed,  util.BoolToByte(treatment.Morning),  util.BoolToByte(treatment.Afternoon),  util.BoolToByte(treatment.Evening), treatment.StartTreatment, treatment.EndTreatment, nID)
-
-	util.CheckErr(err)
+	util.CheckErr(db.Error)
 
 	if err != nil {
-		response = error.HandleMysqlError(err)
+		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(updateExec, error.Update, title)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, title)
 	}
 
 	output, err := json.Marshal(response)
@@ -191,6 +195,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	
 }
 
 func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
@@ -199,26 +204,22 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 
 	nID := vars["id"]
 
-	query := "DELETE FROM pharmacy_sh.treatment WHERE (id = ?)"
+	db := db.DB.Table("treatment").Where("id= ?", nID).Delete(&model.Treatment{})
 
-	delete, err := db.DB.Prepare(query)
+	util.CheckErr(db.Error)
 
-	util.CheckErr(err)
-
-	deleteExec, err := delete.Exec(nID)
-
-	util.CheckErr(err)
-
-	if err != nil {
-		response = error.HandleMysqlError(err)
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(deleteExec, error.Delete, title)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Delete, title)
 	}
 
 	output, err := json.Marshal(response)
+
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
 	}
 	w.Write(output)
+	
 }

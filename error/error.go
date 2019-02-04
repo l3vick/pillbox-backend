@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/l3vick/go-pharmacy/model"
-	"database/sql"
+	
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -22,20 +22,14 @@ func HandleMysqlError(err error) model.RequestResponse {
 	return response
 }
 
-func HandleEmptyRowsError(result sql.Result, queryType string, title string) model.RequestResponse{
-	var response model.RequestResponse
-	count, err := result.RowsAffected()
-	if err != nil {  
-		response.Code = 405
-		response.Message = fmt.Sprintf("Mysql Error: %s", err.Error())		
-	} else {		
-		if (count == 0){
+func HandleEmptyRowsError(rowsAffected int64, queryType string, title string) model.RequestResponse{
+	var response model.RequestResponse	
+		if (rowsAffected == 0){
 			response.Code = 404
 			response.Message = fmt.Sprintf("%s %s error", queryType, title)	
 		} else {
 			response.Code = 201
 			response.Message = fmt.Sprintf("%s %s success", queryType, title)		
 		}
-	}
 	return response
 }

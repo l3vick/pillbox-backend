@@ -1,19 +1,20 @@
 package handler
 
 import (
-	"encoding/json"
+	/*"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/gorilla/mux"*/
 	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"
+/*	"github.com/l3vick/go-pharmacy/util"
 	"github.com/l3vick/go-pharmacy/db"
-	"io/ioutil"
+	"io/ioutil"*/
 	"net/http"
 )
 
 func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) model.TimingResponse {
-	var timingResponse model.TimingResponse
 
+	var timingResponse model.TimingResponse
+	/*
 	selDB, err := db.DB.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
 
 	if err != nil {
@@ -41,11 +42,13 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) model.Timi
 		timingResponse.Afternoon_Time = afternoonTime
 		timingResponse.Evening_Time = eveningTime
 	}
-
+*/
 	return timingResponse
+	
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {
+	/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -91,9 +94,11 @@ func CreateTiming(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
 
 func UpdateTiming(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -134,9 +139,11 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func DeleteTiming(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -163,4 +170,5 @@ func DeleteTiming(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }

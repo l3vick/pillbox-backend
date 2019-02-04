@@ -1,20 +1,20 @@
 package handler
 
 import (
-	"encoding/json"
+	/*"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/ioutil"*/
 	"net/http"
-	"strconv"
+/*	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
-	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/db"*/
 )
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	pageNumber := r.URL.Query().Get("page")
+/*	pageNumber := r.URL.Query().Get("page")
 	intPage, err := strconv.Atoi(pageNumber)
 	elementsPage := intPage * 10
 	elem := strconv.Itoa(elementsPage)
@@ -74,10 +74,11 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(output)
+	w.Write(output)*/
 }
 
 func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -140,9 +141,11 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	*/
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 	user := model.User{}
@@ -183,9 +186,11 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(output)
+	*/
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -229,9 +234,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -278,9 +285,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -307,9 +316,11 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
 
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -356,9 +367,11 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func FilterUser(w http.ResponseWriter, r *http.Request) {
+	/*
 	vars := mux.Vars(r)
 	nID := vars["filter"]
 
@@ -421,4 +434,5 @@ func FilterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+	*/
 }
