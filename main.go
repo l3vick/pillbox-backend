@@ -2,10 +2,11 @@ package main
 
 import (
 	_ "errors"
-	"github.com/l3vick/go-pharmacy/db"
-	"github.com/l3vick/go-pharmacy/handler"
 	"net/http"
 	"strings"
+
+	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/handler"
 
 	"github.com/gorilla/mux"
 )
@@ -55,6 +56,7 @@ func main() {
 	r.HandleFunc("/treatments/custom/{id}", handler.UpdateTreatmentCustom).Methods("PUT")
 	r.HandleFunc("/treatments/custom/{id}", handler.DeleteTreatmentCustom).Methods("DELETE")
 
+	r.HandleFunc("/timing/{id}", handler.GetTimingByID).Methods("GET")
 	r.HandleFunc("/timing", handler.CreateTiming).Methods("POST")
 	r.HandleFunc("/timing/{id}", handler.UpdateTiming).Methods("PUT")
 	r.HandleFunc("/timing/{id}", handler.DeleteTiming).Methods("DELETE")
