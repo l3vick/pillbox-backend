@@ -168,7 +168,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var treatment model.TreatmentDB
+	var treatment model.Treatment
 
 	err = json.Unmarshal(b, &treatment)
 	if err != nil {
@@ -176,9 +176,9 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(treatment)
+	fmt.Println(treatment.Morning)
 
-	db := db.DB.Table("treatment").Where("id = ?", nID).Updates(&treatment)
+	db := db.DB.Table("treatment").Where("id = ?", nID).Updates(treatment)
 
 	util.CheckErr(db.Error)
 
