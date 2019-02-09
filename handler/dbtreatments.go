@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -17,8 +16,7 @@ const title string = "Treatment"
 
 var response model.RequestResponse
 
-func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
-	/*
+func GetAllTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 		var treatmentsResponse model.TreatmentsResponse
 
@@ -26,9 +24,7 @@ func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 		nID := vars["id"]
 
-		treatmentsResponse = GetTreatments(nID, w, r)
-		treatmentsResponse.TreatmentsCustom = GetTreatmentsCustom(nID, w, r)
-		treatmentsResponse.Timing = GetTiming(nID, w, r)
+		treatmentsResponse = GetTreatmentsByUserID(nID, w, r)
 
 		output, err := json.Marshal(treatmentsResponse)
 		if err != nil {
@@ -37,39 +33,34 @@ func GetTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Write(output)
-	*/
 }
 
-func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) model.TreatmentsResponse {
+func GetTreatmentsByUserID(nID string, w http.ResponseWriter, r *http.Request) (model.TreatmentsResponse) {
 
 	var treatmentResponse model.TreatmentsResponse
-	/*
-		query := fmt.Sprintf("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, morning, afternoon, evening, start_treatment, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID +"")
+	var mornings []*model.Morning
+	var afternoons []*model.Afternoon
+	var evenings []*model.Evening
 
-		fmt.Println(query)
+	//rows, err  := db.DB.Raw("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med), morning, afternoon, evening, start_treatment, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID +"").Rows() 
+	rows, err  := db.DB.Table("treatment").Select("treatment.id, med.name, treatment.morning, treatment.afternoon, treatment.evening, treatment.start_treatment, treatment.end_treatment").Joins("INNER JOIN med ON med.id =  treatment.id_med").Where("id_user = ?", nID).Rows()
 
-		selct, err := db.DB.Query(query)
-
-		if err != nil {
-			panic(err.Error())
-		}
-
-		var mornings []*model.Morning
-		var afternoons []*model.Afternoon
-		var evenings []*model.Evening
-
-		for selct.Next() {
+	defer rows.Close()
+	
+	util.CheckErr(err)
+	
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			count = count + 1
 			var id int
-			var morning, afternoon, evening byte
-			var name, start_treatment, end_treatment string
-
-			err = selct.Scan(&id, &name, &morning, &afternoon, &evening, &start_treatment, &end_treatment)
-
-			if err != nil {
-				panic(err.Error())
-			}
-
-			if morning == 1 {
+			var name, start_treatment, end_treatment, morning, afternoon, evening string
+			
+			rows.Scan(&id, &name, &morning, &afternoon, &evening, &start_treatment, &end_treatment)
+			
+			if morning == "true" {
 				morningAux := model.Morning {
 					ID: id,
 					Name: name,
@@ -79,7 +70,8 @@ func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) model.Tre
 				mornings = append(mornings, &morningAux)
 			}
 
-			if afternoon == 1 {
+			
+			if afternoon == "true" {
 				afternoonAux := model.Afternoon {
 					ID: id,
 					Name: name,
@@ -89,7 +81,7 @@ func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) model.Tre
 				afternoons = append(afternoons, &afternoonAux)
 			}
 
-			if evening == 1 {
+			if evening == "true" {
 				eveningAux := model.Evening {
 					ID: id,
 					Name: name,
@@ -99,35 +91,15 @@ func GetTreatments(nID string, w http.ResponseWriter, r *http.Request) model.Tre
 				evenings = append(evenings, &eveningAux)
 			}
 		}
-
-		treatmentResponse.Morning = mornings
-		treatmentResponse.Afternoon = afternoons
-		treatmentResponse.Evening = evenings
-	*/
-
-	var treatment []model.Treatment
-
-	query := fmt.Sprintf("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, morning, afternoon, evening, start_treatment, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID + "")
-
-	fmt.Println(query)
-
-	db := db.DB.Table("treatment").Find(&treatment, "id_user = ?", nID)
-
-	util.CheckErr(db.Error)
-
-	if db.Error != nil {
-		response = error.HandleMysqlError(db.Error)
-	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Insert, title)
+		response = error.HandleNoRowsError(count, error.Select, title)
 	}
 
-	output, err := json.Marshal(response)
-
-	if err != nil {
-		http.Error(w, err.Error(), 501)
-		return
-	}
-	w.Write(output)
+	treatmentResponse.Morning = mornings
+	treatmentResponse.Afternoon = afternoons
+	treatmentResponse.Evening = evenings
+	treatmentResponse.TreatmentsCustom = GetTreatmentsCustom(nID, w, r)
+	treatmentResponse.Timing = GetTiming(nID, w, r)
+	treatmentResponse.Response = response
 
 	return treatmentResponse
 }

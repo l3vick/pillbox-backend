@@ -13,11 +13,12 @@ import (
 	"github.com/l3vick/go-pharmacy/db"*/
 )
 
-func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]*model.TreatmentCustomResponse){
+func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]model.TreatmentCustomResponse){
 
-	var treatmentsCustomResponse []*model.TreatmentCustomResponse
-
+	
+	var treatmentsCustomResponse []model.TreatmentCustomResponse
 	/*
+	
 	query := fmt.Sprintf("SELECT id, id_med, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, start_treatment, end_treatment, period FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID +"")
 
 	fmt.Println(query)
@@ -60,6 +61,20 @@ func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]
 	}
 
 	*/
+
+	treatmentCustomResponse := model.TreatmentCustomResponse {
+		ID: 1,
+		IDMed: 1,
+		Name: "name",
+		Time: "time",
+		Alarm:  true,
+		StartTreatment: "start_treatment",
+		EndTreatment: "end_treatment",
+		Period: 1,
+	}
+
+	treatmentsCustomResponse = append(treatmentsCustomResponse, treatmentCustomResponse)
+
 	return treatmentsCustomResponse
 }
 

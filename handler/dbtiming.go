@@ -13,8 +13,11 @@ import (
 
 func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) model.TimingResponse {
 
-	var timingResponse model.TimingResponse
 	/*
+
+
+	var timingResponse model.TimingResponse
+
 	selDB, err := db.DB.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user=?", idUser)
 
 	if err != nil {
@@ -43,8 +46,15 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) model.Timi
 		timingResponse.Evening_Time = eveningTime
 	}
 */
+	timingResponse := model.TimingResponse {
+		Morning : true,
+		Afternoon : true,
+		Evening : true,
+		Morning_Time : "morningTime",
+		Afternoon_Time : "afternoonTime",
+		Evening_Time : "eveningTime",
+	}
 	return timingResponse
-	
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {

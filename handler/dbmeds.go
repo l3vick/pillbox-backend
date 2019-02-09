@@ -172,7 +172,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	var query string = "UPDATE `pharmacy_sh`.`med` SET"
 
 	if med.Name != "" {
-		query = query + fmt.Sprintf("`name` = '%s'", med.Name)
+		query = query + fmt.Sprintf("name = '%s'", med.Name)
 	}
 
 	if med.Name != "" && med.Description != "" {
@@ -180,7 +180,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if med.Description != "" {
-		query = query + fmt.Sprintf("`description` = '%s'", med.Description)
+		query = query + fmt.Sprintf("description = '%s'", med.Description)
 	}
 
 	query = query + fmt.Sprintf(" WHERE (`id` = '%s')", nID)

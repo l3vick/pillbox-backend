@@ -2,50 +2,51 @@ package model
 
 
 type TreatmentsResponse struct {
-	Morning 				[]*Morning						`json:"morning"`
-	Afternoon				[]*Afternoon					`json:"afternoon"`
-	Evening					[]*Evening						`json:"evening"`
-	TreatmentsCustom   		[]*TreatmentCustomResponse		`json:"treatments_custom"`
-	Timing           		TimingResponse					`json:"timing"`
+	Morning 				[]*Morning						`json:"morning,omitempty"`
+	Afternoon				[]*Afternoon					`json:"afternoon,omitempty"`
+	Evening					[]*Evening						`json:"evening,omitempty"`
+	TreatmentsCustom   		[]TreatmentCustomResponse		`json:"treatments_custom,omitempty"`
+	Timing           		TimingResponse					`json:"timing,omitempty"`
+	Response				RequestResponse					`json:"response,omitempty"`
 }
 
 type Morning struct {
-	ID				int		`json:"id"`
-	Name			string	`json:"name"`
-	StartTreatment	string	`json:"start_treatment"`
-	EndTreatment	string	`json:"end_treatment"`
+	ID				int		`json:"id,omitempty"`
+	Name			string	`json:"name,omitempty"`
+	StartTreatment	string	`json:"start_treatment,omitempty"`
+	EndTreatment	string	`json:"end_treatment,omitempty"`
 }
 
 type Afternoon struct {
-	ID				int		`json:"id"`
-	Name			string	`json:"name"`
-	StartTreatment	string	`json:"start_treatment"`
-	EndTreatment	string	`json:"end_treatment"`
+	ID				int		`json:"id,omitempty"`
+	Name			string	`json:"name,omitempty"`
+	StartTreatment	string	`json:"start_treatment,omitempty"`
+	EndTreatment	string	`json:"end_treatment,omitempty"`
 }
 
 type Evening struct {
-	ID				int		`json:"id"`
-	Name			string	`json:"name"`
-	StartTreatment	string	`json:"start_treatment"`
-	EndTreatment	string	`json:"end_treatment"`
+	ID				int		`json:"id,omitempty"`
+	Name			string	`json:"name,omitempty"`
+	StartTreatment	string	`json:"start_treatment,omitempty"`
+	EndTreatment	string	`json:"end_treatment,omitempty"`
 }
 
 type TreatmentCustomResponse struct {
-	ID				int		`json:"id"`
-	IDMed			int		`json:"id_med"`
-	Name			string	`json:"name"`
-	Time			string	`json:"time"`
-	Alarm			bool	`json:"alarm"`
-	StartTreatment 	string	`json:"start_treatment"`
-	EndTreatment	string	`json:"end_treatment"`
-	Period			int		`json:"period"`
+	ID				int		`json:"id,omitempty"`
+	IDMed			int		`json:"id_med,omitempty"`
+	Name			string	`json:"name,omitempty"`
+	Time			string	`json:"time,omitempty"`
+	Alarm			bool	`json:"alarm,omitempty"`
+	StartTreatment 	string	`json:"start_treatment,omitempty"`
+	EndTreatment	string	`json:"end_treatment,omitempty"`
+	Period			int		`json:"period,omitempty"`
 }
 
 type TimingResponse struct {
-	Morning        bool   `json:"morning"`
-	Afternoon      bool   `json:"afternoon"`
-	Evening        bool   `json:"evening"`
-	Morning_Time   string `json:"morning_time"`
-	Afternoon_Time string `json:"afternoon_time"`
-	Evening_Time   string `json:"evening_time"`
+	Morning        bool   `json:"morning,omitempty"`
+	Afternoon      bool   `json:"afternoon,omitempty"`
+	Evening        bool   `json:"evening,omitempty"`
+	Morning_Time   string `json:"morning_time,omitempty"`
+	Afternoon_Time string `json:"afternoon_time,omitempty"`
+	Evening_Time   string `json:"evening_time,omitempty"`
 }
