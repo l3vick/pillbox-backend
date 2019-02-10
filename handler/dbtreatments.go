@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -14,8 +13,6 @@ import (
 )
 
 const TITLE_TREATMENT string = "Treatment"
-
-var response model.RequestResponse
 
 func GetAllTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
@@ -39,10 +36,10 @@ func GetAllTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 func GetTreatmentsByUserID(nID string, w http.ResponseWriter, r *http.Request) model.TreatmentsResponse {
 
 	var treatmentResponse model.TreatmentsResponse
-	var mornings []*model.Morning
-	var afternoons []*model.Afternoon
-	var evenings []*model.Evening
-	var responseSecondary model.RequestResponse
+	var treatments []*model.TreatmentResponse
+	var response model.RequestResponse
+	var responseCustom model.RequestResponse
+	var responseTiming model.RequestResponse
 
 	//rows, err  := db.DB.Raw("SELECT id, (SELECT name FROM pharmacy_sh.med WHERE id = id_med), morning, afternoon, evening, start_treatment, end_treatment FROM pharmacy_sh.treatment WHERE id_user = " + nID +"").Rows()
 	rows, err := db.DB.Table("treatment").Select("treatment.id, med.name, treatment.morning, treatment.afternoon, treatment.evening, treatment.start_treatment, treatment.end_treatment").Joins("INNER JOIN med ON med.id =  treatment.id_med").Where("id_user = ?", nID).Rows()
@@ -62,54 +59,33 @@ func GetTreatmentsByUserID(nID string, w http.ResponseWriter, r *http.Request) m
 
 			rows.Scan(&id, &name, &morning, &afternoon, &evening, &start_treatment, &end_treatment)
 
-			if morning == "true" {
-				morningAux := model.Morning{
-					ID:             id,
-					Name:           name,
-					StartTreatment: start_treatment,
-					EndTreatment:   end_treatment,
-				}
-				mornings = append(mornings, &morningAux)
+			treatmentAux := model.TreatmentResponse{
+				ID:             id,
+				Name:           name,
+				Morning:        morning,
+				Afternoon:      afternoon,
+				Evening:        evening,
+				StartTreatment: start_treatment,
+				EndTreatment:   end_treatment,
 			}
-
-			if afternoon == "true" {
-				afternoonAux := model.Afternoon{
-					ID:             id,
-					Name:           name,
-					StartTreatment: start_treatment,
-					EndTreatment:   end_treatment,
-				}
-				afternoons = append(afternoons, &afternoonAux)
-			}
-
-			if evening == "true" {
-				eveningAux := model.Evening{
-					ID:             id,
-					Name:           name,
-					StartTreatment: start_treatment,
-					EndTreatment:   end_treatment,
-				}
-				evenings = append(evenings, &eveningAux)
-			}
+			treatments = append(treatments, &treatmentAux)
 		}
-		response = error.HandleNoRowsError(count, error.Select, TITLE_TREATMENT)
+		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TREATMENT)
 		treatmentResponse.Response = append(treatmentResponse.Response, response)
-		fmt.Println(fmt.Sprintf(" code: %d  message: %s ", response.Code, response.Message))
 	}
 
-	treatmentResponse.Morning = mornings
-	treatmentResponse.Afternoon = afternoons
-	treatmentResponse.Evening = evenings
-	treatmentResponse.TreatmentsCustom, responseSecondary = GetTreatmentsCustom(nID, w, r)
-	treatmentResponse.Timing = GetTiming(nID, w, r)
-	fmt.Println("--------------------------------")
-	fmt.Println(fmt.Sprintf(" code: %d  message: %s ", response.Code, response.Message))
-	treatmentResponse.Response = append(treatmentResponse.Response, responseSecondary)
+	treatmentResponse.Treatments = treatments
+	treatmentResponse.TreatmentsCustom, responseCustom = GetTreatmentsCustom(nID, w, r)
+	treatmentResponse.Response = append(treatmentResponse.Response, responseCustom)
+	treatmentResponse.Timing, responseTiming = GetTiming(nID, w, r)
+	treatmentResponse.Response = append(treatmentResponse.Response, responseTiming)
 
 	return treatmentResponse
 }
 
 func CreateTreatment(w http.ResponseWriter, r *http.Request) {
+
+	var response model.RequestResponse
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -132,7 +108,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Insert, TITLE_TREATMENT)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, TITLE_TREATMENT)
 	}
 
 	output, err := json.Marshal(response)
@@ -145,6 +121,8 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
+
+	var response model.RequestResponse
 
 	vars := mux.Vars(r)
 
@@ -189,6 +167,8 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 
+	var response model.RequestResponse
+
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -200,7 +180,7 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Delete, TITLE_TREATMENT)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.DELETE, TITLE_TREATMENT)
 	}
 
 	output, err := json.Marshal(response)

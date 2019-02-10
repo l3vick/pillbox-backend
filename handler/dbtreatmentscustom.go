@@ -17,6 +17,7 @@ const TITLE_TREATMENTCUSTOM string = "TreatmentCustom"
 func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]*model.TreatmentCustomResponse, model.RequestResponse) {
 
 	var treatmentsCustomResponse []*model.TreatmentCustomResponse
+	var response model.RequestResponse
 	//rows, err  := db.DB.Raw("SELECT id, id_med, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, start_treatment, end_treatment, period FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID +"").Rows()
 	rows, err := db.DB.Table("treatment_custom").Select("treatment_custom.id, treatment_custom.id_med, med.name, treatment_custom.time, treatment_custom.alarm, treatment_custom.start_treatment, treatment_custom.end_treatment, treatment_custom.period ").Joins("INNER JOIN med ON med.id =  treatment_custom.id_med").Where("id_user = ?", nID).Rows()
 
@@ -49,7 +50,7 @@ func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]
 
 		}
 
-		response = error.HandleNoRowsError(count, error.Select, TITLE_TREATMENTCUSTOM)
+		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TREATMENTCUSTOM)
 	}
 
 	return treatmentsCustomResponse, response
@@ -58,6 +59,7 @@ func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]
 func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 
 	var treatmentCustom model.TreatmentCustom
+	var response model.RequestResponse
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -79,7 +81,7 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Insert, TITLE_TREATMENTCUSTOM)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)
@@ -92,6 +94,8 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
+
+	var response model.RequestResponse
 
 	vars := mux.Vars(r)
 
@@ -135,6 +139,8 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 
+	var response model.RequestResponse
+
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -146,7 +152,7 @@ func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Delete, TITLE_TREATMENTCUSTOM)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.DELETE, TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)

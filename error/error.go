@@ -7,10 +7,10 @@ import (
 	"github.com/l3vick/go-pharmacy/model"
 )
 
-const Select string = "Select"
-const Insert string = "Insert"
+const SELECT string = "Select"
+const INSERT string = "Insert"
 const Update string = "Update"
-const Delete string = "Delete"
+const DELETE string = "Delete"
 
 func HandleMysqlError(err error) model.RequestResponse {
 	var response model.RequestResponse
