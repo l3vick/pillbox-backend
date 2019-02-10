@@ -1,17 +1,16 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
-	"fmt"
-	"encoding/json"
-	"io/ioutil"
 
+	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
-	"github.com/gorilla/mux"
 )
-
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
 
@@ -23,7 +22,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 
 	elem := strconv.Itoa(elementsPage)
 
-	query := fmt.Sprintf("SELECT id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.meds) as count FROM pharmacy_sh.meds LIMIT " + elem + ",10")
+	query := fmt.Sprintf("SELECT id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med) as count FROM pharmacy_sh.med LIMIT " + elem + ",10")
 
 	fmt.Println(query)
 
@@ -37,62 +36,21 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for selDB.Next() {
-		var id int
-		var name string
-		var description string
-		var pharmacyID util.JsonNullInt64
-		var count int
+		var id, pharmacyID, count int
+		var name, description string
 		err = selDB.Scan(&id, &name, &description, &pharmacyID, &count)
 		if err != nil {
 			panic(err.Error())
 		}
 
 		med := model.Med{
-			ID:   id,
-			Name: name,
-			Description:  description,
-			PharmacyID: pharmacyID,
+			ID:          id,
+			Name:        name,
+			Description: description,
+			PharmacyID:  pharmacyID,
 		}
 		meds = append(meds, &med)
-		
-
-		var index int
-		if (count > 10){
-
-			if (count % 10 == 0){
-				index = 1
-			}else{
-				index = 0
-			}
-
-			if intPage == 0 {
-				page.First = 0
-				page.Previous = 0
-				page.Next = intPage+1
-				page.Last = (count/10) - index
-				page.Count = count
-			} else if intPage == (count/10) - index {
-				page.First = 0
-				page.Previous = intPage -1
-				page.Next = intPage
-				page.Last = (count/10) - index
-				page.Count = count
-			} else {
-				page.First = 0
-				page.Previous = intPage-1
-				page.Next = intPage+1
-				page.Last = (count/10) - index
-				page.Count = count
-			}
-		} else {
-			page.First = 0
-			page.Previous = 0
-			page.Next = 0
-			page.Last = 0
-			page.Count = 0
-		}
-		
-
+		page = util.GetPage(count, intPage)
 	}
 
 	response := model.MedResponse{
@@ -105,23 +63,27 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Write(output)	
+	w.Write(output)
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
+
 	nID := vars["id"]
 
-	selDB, err := dbConnector.Query("SELECT * FROM pharmacy_sh.meds WHERE id=?", nID)
+	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.med WHERE id = " + nID + "")
+
+	fmt.Println(query)
+
+	selDB, err := dbConnector.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
 
 	med := model.Med{}
 	for selDB.Next() {
-		var id int
-		var pharmacyId util.JsonNullInt64
+		var id, pharmacyId int
 		var name, description string
 		err = selDB.Scan(&id, &name, &description, &pharmacyId)
 		if err != nil {
@@ -150,20 +112,35 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var med model.MedInt
+	var med model.Med
 	err = json.Unmarshal(b, &med)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`meds` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
+	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
+
+	var medsResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		medsResponse.Code = 500
+		medsResponse.Message = err.Error()
+	} else {
+		medsResponse.Code = 200
+		medsResponse.Message = "Med creado con éxito"
 	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+
 	defer insert.Close()
 }
 
@@ -186,13 +163,42 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`meds` SET `name` = '%s', `description` = '%s' WHERE (`id` = '%s')", med.Name, med.Description, nID)
+	var query string = "UPDATE `pharmacy_sh`.`med` SET"
+
+	if med.Name != "" {
+		query = query + fmt.Sprintf("`name` = '%s'", med.Name)
+	}
+
+	if med.Name != "" && med.Description != "" {
+		query = query + " , "
+	}
+
+	if med.Description != "" {
+		query = query + fmt.Sprintf("`description` = '%s'", med.Description)
+	}
+
+	query = query + fmt.Sprintf(" WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
+
 	update, err := dbConnector.Query(query)
+
+	var medsResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		medsResponse.Code = 500
+		medsResponse.Message = err.Error()
+	} else {
+		medsResponse.Code = 200
+		medsResponse.Message = "Med actualizado con éxito"
 	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer update.Close()
 }
@@ -202,14 +208,27 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`meds` WHERE (`id` = '%s')", nID)
+	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`med` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
 	insert, err := dbConnector.Query(query)
 
+	var medsResponse model.RequestResponse
 	if err != nil {
-		panic(err.Error())
+		medsResponse.Code = 500
+		medsResponse.Message = err.Error()
+	} else {
+		medsResponse.Code = 200
+		medsResponse.Message = "Med borrado con éxito"
 	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 
 	defer insert.Close()
 }
