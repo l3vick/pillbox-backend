@@ -1,151 +1,127 @@
 package handler
 
 import (
-	"net/http"
-	/*
-	"fmt"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
 
-	"github.com/gorilla/mux"*/
+	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/error"
 	"github.com/l3vick/go-pharmacy/model"
-	/*"github.com/l3vick/go-pharmacy/util"
-	"github.com/l3vick/go-pharmacy/db"*/
+	"github.com/l3vick/go-pharmacy/util"
 )
 
-func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]model.TreatmentCustomResponse){
+const TITLE_TREATMENTCUSTOM string = "TreatmentCustom"
 
-	
-	var treatmentsCustomResponse []model.TreatmentCustomResponse
-	/*
-	
-	query := fmt.Sprintf("SELECT id, id_med, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, start_treatment, end_treatment, period FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID +"")
+func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]*model.TreatmentCustomResponse, model.RequestResponse) {
 
-	fmt.Println(query)
+	var treatmentsCustomResponse []*model.TreatmentCustomResponse
+	//rows, err  := db.DB.Raw("SELECT id, id_med, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, start_treatment, end_treatment, period FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID +"").Rows()
+	rows, err := db.DB.Table("treatment_custom").Select("treatment_custom.id, treatment_custom.id_med, med.name, treatment_custom.time, treatment_custom.alarm, treatment_custom.start_treatment, treatment_custom.end_treatment, treatment_custom.period ").Joins("INNER JOIN med ON med.id =  treatment_custom.id_med").Where("id_user = ?", nID).Rows()
 
-	selDB, err := db.DB.Query(query)
+	defer rows.Close()
+
+	util.CheckErr(err)
+
 	if err != nil {
-		panic(err.Error())
-	}
-	defer selDB.Close()
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			count = count + 1
+			var id, idMed, period int
+			var name, time, startTreatment, endTreatment, alarm string
+			rows.Scan(&id, &idMed, &name, &time, &alarm, &startTreatment, &endTreatment, &period)
 
-	for selDB.Next() {
-		var id, idMed, period int
-		var alarm byte
-		var name, time, start_treatment, end_treatment string
-		err = selDB.Scan(&id, &idMed, &name, &time, &alarm, &start_treatment, &end_treatment, &period)
-		if err != nil {
-			panic(err.Error())
+			treatmentsCustom := model.TreatmentCustomResponse{
+				ID:             id,
+				IDMed:          idMed,
+				Name:           name,
+				Time:           time,
+				Alarm:          alarm,
+				StartTreatment: startTreatment,
+				EndTreatment:   endTreatment,
+				Period:         period,
+			}
+
+			treatmentsCustomResponse = append(treatmentsCustomResponse, &treatmentsCustom)
+
 		}
 
-		treatmentsCustom := model.TreatmentCustomResponse {
-			ID: id,
-			IDMed: idMed,
-			Name: name,
-			Time: time,
-			Alarm:  util.ByteToBool(alarm),
-			StartTreatment: start_treatment,
-			EndTreatment: end_treatment,
-			Period: period,
-		}
-
-		treatmentsCustomResponse = append(treatmentsCustomResponse, &treatmentsCustom)
-	}
-	
-	if err := selDB.Err(); err != nil {
-        panic(err.Error())
+		response = error.HandleNoRowsError(count, error.Select, TITLE_TREATMENTCUSTOM)
 	}
 
-	if err := selDB.Close(); err != nil {
-		panic(err.Error())
-	}
-
-	*/
-
-	treatmentCustomResponse := model.TreatmentCustomResponse {
-		ID: 1,
-		IDMed: 1,
-		Name: "name",
-		Time: "time",
-		Alarm:  true,
-		StartTreatment: "start_treatment",
-		EndTreatment: "end_treatment",
-		Period: 1,
-	}
-
-	treatmentsCustomResponse = append(treatmentsCustomResponse, treatmentCustomResponse)
-
-	return treatmentsCustomResponse
+	return treatmentsCustomResponse, response
 }
 
 func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
-	/*
+
+	var treatmentCustom model.TreatmentCustom
+
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	// Unmarshal
-	var treatment model.TreatmentCustom
-	err = json.Unmarshal(b, &treatment)
+
+	err = json.Unmarshal(b, &treatmentCustom)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`treatment_custom` (`id_user`, `id_med`, `time`, `alarm`, `start_treatment`, `end_treatment`, `period`)  VALUES('%d', '%d', '%s', '%d', '%s', '%s', '%d')", treatment.IDUser, treatment.IDMed, treatment.Time, util.BoolToByte(treatment.Alarm), treatment.StartTreatment, treatment.EndTreatment, treatment.Period)
+	db := db.DB.Table("treatment_custom").Create(&treatmentCustom)
 
-	fmt.Println(query)
-	insert, err := db.DB.Query(query)
-	if err != nil {
-		panic(err.Error())
+	util.CheckErr(db.Error)
+
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
+	} else {
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Insert, TITLE_TREATMENTCUSTOM)
 	}
-	defer insert.Close()
 
-	output, err := json.Marshal(treatment)
+	output, err := json.Marshal(response)
+
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), 501)
 		return
 	}
-
 	w.Write(output)
-	*/
 }
 
 func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
-	/*
+
 	vars := mux.Vars(r)
+
 	nID := vars["id"]
 
 	b, err := ioutil.ReadAll(r.Body)
+
 	defer r.Body.Close()
+
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	var treatment model.TreatmentCustom
+	var treatmentCustom model.TreatmentCustom
 
-	err = json.Unmarshal(b, &treatment)
+	err = json.Unmarshal(b, &treatmentCustom)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	var query  = fmt.Sprintf("UPDATE `pharmacy_sh`.`treatment_custom` SET `id_med` = '%d', `time` = '%s', `alarm` = '%d', `start_treatment` = '%s', `end_treatment` = '%s', `period` = '%d' WHERE (`id` = '%s')", treatment.IDMed, treatment.Time, util.BoolToByte(treatment.Alarm), treatment.StartTreatment, treatment.EndTreatment, treatment.Period, nID)
+	db := db.DB.Table("treatment_custom").Where("id = ?", nID).Updates(&treatmentCustom)
 
-	fmt.Println(query)
+	util.CheckErr(db.Error)
 
-	update, err := db.DB.Query(query)
-
-	var response model.RequestResponse
 	if err != nil {
-		response.Code = 500
-		response.Message = err.Error()
+		response = error.HandleMysqlError(db.Error)
 	} else {
-		response.Code = 200
-		response.Message = "Treatment custom actualizado con éxito"
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)
@@ -155,38 +131,29 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
-
-	defer update.Close()
-	*/
 }
 
 func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
-	/*
+
 	vars := mux.Vars(r)
+
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`treatment_custom` WHERE (`id` = '%s')", nID)
+	db := db.DB.Table("treatment_custom").Where("id= ?", nID).Delete(&model.TreatmentCustom{})
 
-	fmt.Println(query)
-	insert, err := db.DB.Query(query)
+	util.CheckErr(db.Error)
 
-	var response model.RequestResponse
-	if err != nil {
-		response.Code = 500
-		response.Message = err.Error()
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
 	} else {
-		response.Code = 200
-		response.Message = "Treatment custom borrado con éxito"
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Delete, TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)
+
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
 	}
-
 	w.Write(output)
-
-	defer insert.Close()
-	*/
 }

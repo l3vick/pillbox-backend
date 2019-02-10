@@ -2,8 +2,9 @@ package error
 
 import (
 	"fmt"
-	"github.com/l3vick/go-pharmacy/model"
+
 	"github.com/go-sql-driver/mysql"
+	"github.com/l3vick/go-pharmacy/model"
 )
 
 const Select string = "Select"
@@ -21,27 +22,26 @@ func HandleMysqlError(err error) model.RequestResponse {
 	return response
 }
 
-func HandleEmptyRowsError(rowsAffected int64, queryType string, title string) model.RequestResponse{
-	var response model.RequestResponse	
-		if (rowsAffected == 0){
-			response.Code = 404
-			response.Message = fmt.Sprintf("%s %s error: not created", queryType, title)	
-		} else {
-			response.Code = 201
-			response.Message = fmt.Sprintf("%s %s success: created ok", queryType, title)		
-		}
+func HandleEmptyRowsError(rowsAffected int64, queryType string, title string) model.RequestResponse {
+	var response model.RequestResponse
+	if rowsAffected == 0 {
+		response.Code = 404
+		response.Message = fmt.Sprintf("%s %s error: not created", queryType, title)
+	} else {
+		response.Code = 201
+		response.Message = fmt.Sprintf("%s %s success", queryType, title)
+	}
 	return response
 }
-
 
 func HandleNoRowsError(count int, queryType string, title string) model.RequestResponse {
 	var response model.RequestResponse
 	if count == 0 {
-		response.Code = 404
-		response.Message = fmt.Sprintf("%s %s error: No rows result", queryType, title)
+		response.Code = 202
+		response.Message = fmt.Sprintf("%s %s success: No rows result", queryType, title)
 	} else {
 		response.Code = 201
-		response.Message = fmt.Sprintf("%s %s success: %d rows", queryType, title, count)		
+		response.Message = fmt.Sprintf("%s %s success: %d rows", queryType, title, count)
 	}
 	return response
 }
