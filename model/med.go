@@ -1,8 +1,8 @@
 package model
 
 type Med struct {
-	ID int		`json:"id"`
-	Name 		string 	`json:"name"`
-	Description string  `json:"description"`
-	PharmacyID  int 	`json:"id_pharmacy"`
+	ID int		`json:"id,omitempty"`
+	Name 		string 	`json:"name,omitempty"`
+	Description string  `json:"description,omitempty"`
+	PharmacyID  int 	`json:"id_pharmacy,omitempty"`
 }

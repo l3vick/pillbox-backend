@@ -1,19 +1,19 @@
 package model
 
 type Pharmacy struct {
-	ID          int    `json:"id"`
-	Cif         string `json:"cif"`
-	Address     string `json:"address"`
-	NumberPhone int    `json:"phone_number"`
-	Schedule    string `json:"schedule"`
-	Name        string `json:"name"`
-	Guard       int    `json:"guard"`
-	Password    string `json:"password"`
-	Mail        string `json:"mail"`
+	ID          int    `json:"id,omitempty"`
+	Cif         string `json:"cif,omitempty"`
+	Address     string `json:"address,omitempty"`
+	NumberPhone int    `json:"phone_number,omitempty"`
+	Schedule    string `json:"schedule,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Guard       int    `json:"guard,omitempty"`
+	Password    string `json:"password,omitempty"`
+	Mail        string `json:"mail,omitempty"`
 }
 
 type PharmacyR struct {
-	ID    int    `json:"id"`
-	Mail  string `json:"mail"`
-	State bool   `json:"state"`
+	ID    int    `json:"id,omitempty"`
+	Mail  string `json:"mail,omitempty"`
+	State bool   `json:"state,omitempty"`
 }

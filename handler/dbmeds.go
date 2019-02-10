@@ -1,18 +1,21 @@
 package handler
 
 import (
-	"encoding/json"
+	"net/http"
+	/*"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
+	
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/l3vick/go-pharmacy/db"
 	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"
+	"github.com/l3vick/go-pharmacy/util"*/
 )
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
+	/*
 
 	pageNumber := r.URL.Query().Get("page")
 
@@ -30,7 +33,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 
 	var page model.Page
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -64,10 +67,11 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(output)
+	*/
 }
 
 func GetMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	vars := mux.Vars(r)
 
 	nID := vars["id"]
@@ -76,7 +80,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(query)
 
-	selDB, err := dbConnector.Query(query)
+	selDB, err := db.DB.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -101,10 +105,11 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(output)
+	*/
 }
 
 func CreateMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -122,7 +127,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var medsResponse model.RequestResponse
 	if err != nil {
@@ -142,10 +147,11 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
 
 func UpdateMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
@@ -166,7 +172,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	var query string = "UPDATE `pharmacy_sh`.`med` SET"
 
 	if med.Name != "" {
-		query = query + fmt.Sprintf("`name` = '%s'", med.Name)
+		query = query + fmt.Sprintf("name = '%s'", med.Name)
 	}
 
 	if med.Name != "" && med.Description != "" {
@@ -174,14 +180,14 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if med.Description != "" {
-		query = query + fmt.Sprintf("`description` = '%s'", med.Description)
+		query = query + fmt.Sprintf("description = '%s'", med.Description)
 	}
 
 	query = query + fmt.Sprintf(" WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
 
-	update, err := dbConnector.Query(query)
+	update, err := db.DB.Query(query)
 
 	var medsResponse model.RequestResponse
 	if err != nil {
@@ -201,17 +207,18 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer update.Close()
+	*/
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
-
+/*
 	vars := mux.Vars(r)
 	nID := vars["id"]
 
 	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`med` WHERE (`id` = '%s')", nID)
 
 	fmt.Println(query)
-	insert, err := dbConnector.Query(query)
+	insert, err := db.DB.Query(query)
 
 	var medsResponse model.RequestResponse
 	if err != nil {
@@ -231,4 +238,5 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 
 	defer insert.Close()
+	*/
 }
