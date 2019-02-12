@@ -12,8 +12,6 @@ import (
 	"github.com/l3vick/go-pharmacy/util"
 )
 
-const TITLE_TREATMENT string = "Treatment"
-
 func GetAllTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	var treatmentsResponse model.TreatmentsResponse
@@ -101,7 +99,7 @@ func GetTreatmentsByUserID(nID string, w http.ResponseWriter, r *http.Request) m
 			}
 
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TREATMENT)
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_TREATMENT)
 		treatmentResponse.Response = append(treatmentResponse.Response, response)
 	}
 
@@ -141,7 +139,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, TITLE_TREATMENT)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_TREATMENT)
 	}
 
 	output, err := json.Marshal(response)
@@ -185,7 +183,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, TITLE_TREATMENT)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_TREATMENT)
 	}
 
 	output, err := json.Marshal(response)
@@ -213,7 +211,7 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.DELETE, TITLE_TREATMENT)
+		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_TREATMENT)
 	}
 
 	output, err := json.Marshal(response)

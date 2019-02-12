@@ -1,242 +1,220 @@
 package handler
 
 import (
-	"net/http"
-	/*"encoding/json"
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
-	
+	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/error"
 	"github.com/l3vick/go-pharmacy/model"
-	"github.com/l3vick/go-pharmacy/util"*/
+	"github.com/l3vick/go-pharmacy/util"
 )
 
 func GetMeds(w http.ResponseWriter, r *http.Request) {
-	/*
-
 	pageNumber := r.URL.Query().Get("page")
-
 	intPage, err := strconv.Atoi(pageNumber)
-
 	elementsPage := intPage * 10
-
 	elem := strconv.Itoa(elementsPage)
 
-	query := fmt.Sprintf("SELECT id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med) as count FROM pharmacy_sh.med LIMIT " + elem + ",10")
-
-	fmt.Println(query)
-
+	var response model.RequestResponse
 	var meds []*model.Med
-
 	var page model.Page
+	var count int
 
-	selDB, err := db.DB.Query(query)
+	rows, err := db.DB.Table("med").Select("id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med) as count").Offset(elem).Limit(10).Rows()
+
+	defer rows.Close()
+
+	util.CheckErr(err)
+
 	if err != nil {
-		panic(err.Error())
+		response = error.HandleMysqlError(err)
+	} else {
+		for rows.Next() {
+			var id, pharmacyID int
+			var name, description string
+			rows.Scan(&id, &name, &description, &pharmacyID, &count)
+
+			med := model.Med{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				IDPharmacy:  pharmacyID,
+			}
+			meds = append(meds, &med)
+			page = util.GetPage(count, intPage)
+		}
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_MED)
 	}
 
-	for selDB.Next() {
-		var id, pharmacyID, count int
-		var name, description string
-		err = selDB.Scan(&id, &name, &description, &pharmacyID, &count)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		med := model.Med{
-			ID:          id,
-			Name:        name,
-			Description: description,
-			PharmacyID:  pharmacyID,
-		}
-		meds = append(meds, &med)
-		page = util.GetPage(count, intPage)
+	medsResponse := model.MedsResponse{
+		Meds:     meds,
+		Page:     page,
+		Response: response,
 	}
 
-	response := model.MedResponse{
-		Meds: meds,
-		Page: page,
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+}
+
+func GetMed(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	nID := vars["id"]
+
+	var response model.RequestResponse
+	var med model.Med
+
+	rows, err := db.DB.Table("med").Select("*").Where("id = ?", nID).Rows()
+
+	defer rows.Close()
+
+	util.CheckErr(err)
+
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			count = count + 1
+			var id, pharmacyId int
+			var name, description string
+			rows.Scan(&id, &name, &description, &pharmacyId)
+
+			medAux := model.Med{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				IDPharmacy:  pharmacyId,
+			}
+			med = medAux
+		}
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_MED)
+	}
+
+	medResponse := model.MedResponse{
+		Med:      &med,
+		Response: response,
+	}
+
+	output, err := json.Marshal(medResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+}
+
+func CreateMed(w http.ResponseWriter, r *http.Request) {
+	var med model.Med
+	var response model.RequestResponse
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = json.Unmarshal(b, &med)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	db := db.DB.Table("med").Create(&med)
+
+	util.CheckErr(db.Error)
+
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
+	} else {
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_MED)
+	}
+
+	output, err := json.Marshal(response)
+
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+}
+
+func UpdateMed(w http.ResponseWriter, r *http.Request) {
+	var response model.RequestResponse
+
+	vars := mux.Vars(r)
+
+	nID := vars["id"]
+
+	b, err := ioutil.ReadAll(r.Body)
+
+	defer r.Body.Close()
+
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	var med model.Med
+
+	err = json.Unmarshal(b, &med)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	db := db.DB.Table("med").Where("id = ?", nID).Updates(&med)
+
+	util.CheckErr(db.Error)
+
+	if err != nil {
+		response = error.HandleMysqlError(db.Error)
+	} else {
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_MED)
 	}
 
 	output, err := json.Marshal(response)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	w.Write(output)
-	*/
-}
-
-func GetMed(w http.ResponseWriter, r *http.Request) {
-/*
-	vars := mux.Vars(r)
-
-	nID := vars["id"]
-
-	query := fmt.Sprintf("SELECT * FROM pharmacy_sh.med WHERE id = " + nID + "")
-
-	fmt.Println(query)
-
-	selDB, err := db.DB.Query(query)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	med := model.Med{}
-	for selDB.Next() {
-		var id, pharmacyId int
-		var name, description string
-		err = selDB.Scan(&id, &name, &description, &pharmacyId)
-		if err != nil {
-			panic(err.Error())
-		}
-		med.ID = id
-		med.Name = name
-		med.Description = description
-		med.PharmacyID = pharmacyId
-	}
-
-	output, err := json.Marshal(med)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	w.Write(output)
-	*/
-}
-
-func CreateMed(w http.ResponseWriter, r *http.Request) {
-/*
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	var med model.Med
-	err = json.Unmarshal(b, &med)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`med` (`name`, `description`, `id_pharmacy`) VALUES ('%s', '%s','%d' )", med.Name, med.Description, med.PharmacyID)
-
-	fmt.Println(query)
-	insert, err := db.DB.Query(query)
-
-	var medsResponse model.RequestResponse
-	if err != nil {
-		medsResponse.Code = 500
-		medsResponse.Message = err.Error()
-	} else {
-		medsResponse.Code = 200
-		medsResponse.Message = "Med creado con éxito"
-	}
-
-	output, err := json.Marshal(medsResponse)
-	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
 	}
 
 	w.Write(output)
-
-	defer insert.Close()
-	*/
-}
-
-func UpdateMed(w http.ResponseWriter, r *http.Request) {
-/*
-	vars := mux.Vars(r)
-	nID := vars["id"]
-
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	var med model.Med
-	err = json.Unmarshal(b, &med)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	var query string = "UPDATE `pharmacy_sh`.`med` SET"
-
-	if med.Name != "" {
-		query = query + fmt.Sprintf("name = '%s'", med.Name)
-	}
-
-	if med.Name != "" && med.Description != "" {
-		query = query + " , "
-	}
-
-	if med.Description != "" {
-		query = query + fmt.Sprintf("description = '%s'", med.Description)
-	}
-
-	query = query + fmt.Sprintf(" WHERE (`id` = '%s')", nID)
-
-	fmt.Println(query)
-
-	update, err := db.DB.Query(query)
-
-	var medsResponse model.RequestResponse
-	if err != nil {
-		medsResponse.Code = 500
-		medsResponse.Message = err.Error()
-	} else {
-		medsResponse.Code = 200
-		medsResponse.Message = "Med actualizado con éxito"
-	}
-
-	output, err := json.Marshal(medsResponse)
-	if err != nil {
-		http.Error(w, err.Error(), 501)
-		return
-	}
-
-	w.Write(output)
-
-	defer update.Close()
-	*/
 }
 
 func DeleteMed(w http.ResponseWriter, r *http.Request) {
-/*
+	var response model.RequestResponse
+
 	vars := mux.Vars(r)
+
 	nID := vars["id"]
 
-	query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`med` WHERE (`id` = '%s')", nID)
+	db := db.DB.Table("med").Where("id = ?", nID).Delete(&model.Med{})
 
-	fmt.Println(query)
-	insert, err := db.DB.Query(query)
+	util.CheckErr(db.Error)
 
-	var medsResponse model.RequestResponse
-	if err != nil {
-		medsResponse.Code = 500
-		medsResponse.Message = err.Error()
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
 	} else {
-		medsResponse.Code = 200
-		medsResponse.Message = "Med borrado con éxito"
+		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_MED)
 	}
 
-	output, err := json.Marshal(medsResponse)
+	output, err := json.Marshal(response)
+
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
 	}
-
 	w.Write(output)
-
-	defer insert.Close()
-	*/
 }

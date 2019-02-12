@@ -4,6 +4,16 @@ import (
 	/*"encoding/json"
 	"fmt"
 
+
+
+
+
+
+
+
+
+
+
 	"github.com/gorilla/mux"*/
 
 	"encoding/json"
@@ -19,8 +29,6 @@ import (
 		"io/ioutil"*/
 	"net/http"
 )
-
-const TITLE_TIMING string = "Timing"
 
 func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Timing, model.RequestResponse) {
 
@@ -54,7 +62,7 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Tim
 			}
 			timingResponse = timing
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TIMING)
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_TIMING)
 	}
 
 	return timingResponse, response
@@ -96,7 +104,7 @@ func GetTimingByID(w http.ResponseWriter, r *http.Request) {
 			}
 			timing = timingAux
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TIMING)
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_TIMING)
 	}
 
 	timingResponse := model.TimingResponse{
@@ -138,7 +146,7 @@ func CreateTiming(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, TITLE_TIMING)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_TIMING)
 	}
 
 	output, err := json.Marshal(response)
@@ -184,7 +192,7 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, TITLE_TIMING)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_TIMING)
 	}
 
 	output, err := json.Marshal(response)
@@ -210,7 +218,7 @@ func DeleteTiming(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.DELETE, TITLE_TIMING)
+		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_TIMING)
 	}
 
 	output, err := json.Marshal(response)

@@ -17,3 +17,9 @@ type PharmacyR struct {
 	Mail  string `json:"mail,omitempty"`
 	State bool   `json:"state,omitempty"`
 }
+
+type PharmacyResponse struct {
+	Pharmacy []*Pharmacy     `json:"pharmacies,omitempty"`
+	Page     Page            `json:"page,omitempty"`
+	Response RequestResponse `json:"response,omitempty"`
+}

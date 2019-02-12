@@ -2,26 +2,16 @@ package handler
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/db"
 	"github.com/l3vick/go-pharmacy/error"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
-	"io/ioutil"
-
-	/*"encoding/json"
-	"fmt"
-	"io/ioutil"*/
-	"net/http"
-	"strconv"
-	/*	"strconv"
-
-		"github.com/gorilla/mux"
-		"github.com/l3vick/go-pharmacy/model"
-		"github.com/l3vick/go-pharmacy/util"
-		"github.com/l3vick/go-pharmacy/db"*/)
-
-const TITLE_USER string = "User"
+)
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	pageNumber := r.URL.Query().Get("page")
@@ -69,7 +59,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			page = util.GetPage(count, intPage)
 
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_USER)
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_USER)
 	}
 
 	userResponse := model.UsersResponse{
@@ -137,7 +127,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 			page = util.GetPage(count, intPage)
 
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_USER)
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_USER)
 	}
 
 	userResponse := model.UsersResponse{
@@ -195,7 +185,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 			}
 			user = userAux
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_USER)
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_USER)
 	}
 
 	userResponse := model.UserResponse{
@@ -236,7 +226,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, TITLE_USER)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_USER)
 	}
 
 	output, err := json.Marshal(response)
@@ -280,7 +270,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, TITLE_USER)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_USER)
 	}
 
 	output, err := json.Marshal(response)
@@ -306,7 +296,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.DELETE, TITLE_USER)
+		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_USER)
 	}
 
 	output, err := json.Marshal(response)
@@ -349,7 +339,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, TITLE_USER)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_USER)
 	}
 
 	output, err := json.Marshal(response)
