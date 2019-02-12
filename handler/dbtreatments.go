@@ -36,7 +36,9 @@ func GetAllTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 func GetTreatmentsByUserID(nID string, w http.ResponseWriter, r *http.Request) model.TreatmentsResponse {
 
 	var treatmentResponse model.TreatmentsResponse
-	var treatments []*model.TreatmentResponse
+	var morningTreatments []*model.TreatmentResponse
+	var afternoonTreatments []*model.TreatmentResponse
+	var eveningTreatments []*model.TreatmentResponse
 	var response model.RequestResponse
 	var responseCustom model.RequestResponse
 	var responseTiming model.RequestResponse
@@ -59,22 +61,53 @@ func GetTreatmentsByUserID(nID string, w http.ResponseWriter, r *http.Request) m
 
 			rows.Scan(&id, &name, &morning, &afternoon, &evening, &start_treatment, &end_treatment)
 
-			treatmentAux := model.TreatmentResponse{
-				ID:             id,
-				Name:           name,
-				Morning:        morning,
-				Afternoon:      afternoon,
-				Evening:        evening,
-				StartTreatment: start_treatment,
-				EndTreatment:   end_treatment,
+			if morning == "true" {
+				treatmentAux := model.TreatmentResponse{
+					ID:             id,
+					Name:           name,
+					Morning:        morning,
+					Afternoon:      afternoon,
+					Evening:        evening,
+					StartTreatment: start_treatment,
+					EndTreatment:   end_treatment,
+				}
+				morningTreatments = append(morningTreatments, &treatmentAux)
 			}
-			treatments = append(treatments, &treatmentAux)
+
+			if afternoon == "true" {
+				treatmentAux := model.TreatmentResponse{
+					ID:             id,
+					Name:           name,
+					Morning:        morning,
+					Afternoon:      afternoon,
+					Evening:        evening,
+					StartTreatment: start_treatment,
+					EndTreatment:   end_treatment,
+				}
+				afternoonTreatments = append(afternoonTreatments, &treatmentAux)
+			}
+
+			if evening == "true" {
+				treatmentAux := model.TreatmentResponse{
+					ID:             id,
+					Name:           name,
+					Morning:        morning,
+					Afternoon:      afternoon,
+					Evening:        evening,
+					StartTreatment: start_treatment,
+					EndTreatment:   end_treatment,
+				}
+				eveningTreatments = append(eveningTreatments, &treatmentAux)
+			}
+
 		}
 		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TREATMENT)
 		treatmentResponse.Response = append(treatmentResponse.Response, response)
 	}
 
-	treatmentResponse.Treatments = treatments
+	treatmentResponse.TreatmentsMorning = morningTreatments
+	treatmentResponse.TreatmentsAfternoon = afternoonTreatments
+	treatmentResponse.TreatmentsEvening = eveningTreatments
 	treatmentResponse.TreatmentsCustom, responseCustom = GetTreatmentsCustom(nID, w, r)
 	treatmentResponse.Response = append(treatmentResponse.Response, responseCustom)
 	treatmentResponse.Timing, responseTiming = GetTiming(nID, w, r)

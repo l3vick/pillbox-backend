@@ -1,10 +1,12 @@
 package model
 
 type TreatmentsResponse struct {
-	Treatments       []*TreatmentResponse       `json:"treatments,omitempty"`
-	TreatmentsCustom []*TreatmentCustomResponse `json:"treatments_custom,omitempty"`
-	Timing           Timing                     `json:"timing,omitempty"`
-	Response         []RequestResponse          `json:"response,omitempty"`
+	TreatmentsMorning   []*TreatmentResponse       `json:"treatments_morning,omitempty"`
+	TreatmentsAfternoon []*TreatmentResponse       `json:"treatments_afternoon,omitempty"`
+	TreatmentsEvening   []*TreatmentResponse       `json:"treatments_evening,omitempty"`
+	TreatmentsCustom    []*TreatmentCustomResponse `json:"treatments_custom,omitempty"`
+	Timing              Timing                     `json:"timing,omitempty"`
+	Response            []RequestResponse          `json:"response,omitempty"`
 }
 
 type TreatmentResponse struct {
