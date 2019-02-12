@@ -115,7 +115,6 @@ func GetTimingByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {
-
 	var timing model.Timing
 	var response model.RequestResponse
 

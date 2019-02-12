@@ -1,11 +1,12 @@
 package model
 
 type UserResponse struct {
-	Users []*User `json:"users,omitempty"`
-	Page  Page    `json:"page,omitempty"`
+	User     *User           `json:"users,omitempty"`
+	Response RequestResponse `json:"response,omitempty"`
 }
 
-type UserResponseByPharmacy struct {
-	Users []*UserByPharmacy `json:"users,omitempty"`
-	Page  Page              `json:"page,omitempty"`
+type UsersResponse struct {
+	Users    []*User         `json:"users,omitempty"`
+	Page     Page            `json:"page,omitempty"`
+	Response RequestResponse `json:"response,omitempty"`
 }
