@@ -26,7 +26,7 @@ func HandleEmptyRowsError(rowsAffected int64, queryType string, title string) mo
 	var response model.RequestResponse
 	if rowsAffected == 0 {
 		response.Code = 404
-		response.Message = fmt.Sprintf("%s %s error: not created", queryType, title)
+		response.Message = fmt.Sprintf("%s %s error: No rows affected", queryType, title)
 	} else {
 		response.Code = 201
 		response.Message = fmt.Sprintf("%s %s success", queryType, title)
