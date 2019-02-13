@@ -178,7 +178,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 
 	util.CheckErr(db.Error)
 
-	if err != nil {
+	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_MED)
