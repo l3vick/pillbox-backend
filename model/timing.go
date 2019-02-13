@@ -9,3 +9,8 @@ type Timing struct {
 	AfternoonTime string `json:"afternoon_time,omitempty"`
 	EveningTime   string `json:"evening_time,omitempty"`
 }
+
+type TimingResponse struct {
+	Timing   Timing          `json:"timing,omitempty"`
+	Response RequestResponse `json:"response,omitempty"`
+}

@@ -4,20 +4,31 @@ import (
 	/*"encoding/json"
 	"fmt"
 
+
+
+
+
+
+
+
+
+
+
 	"github.com/gorilla/mux"*/
 
+	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/l3vick/go-pharmacy/db"
 	"github.com/l3vick/go-pharmacy/error"
 	"github.com/l3vick/go-pharmacy/model"
 	"github.com/l3vick/go-pharmacy/util"
+	"io/ioutil"
 
 	/*	"github.com/l3vick/go-pharmacy/util"
 		"github.com/l3vick/go-pharmacy/db"
 		"io/ioutil"*/
 	"net/http"
 )
-
-const TITLE_TIMING string = "Timing"
 
 func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Timing, model.RequestResponse) {
 
@@ -41,15 +52,7 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Tim
 
 			rows.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
 
-			/*timing.Morning = morning
-			timing.Afternoon = afternoon
-			timing.Evening = evening
-			timing.MorningTime = morningTime
-			timing.AfternoonTime = afternoonTime
-			timing.EveningTime = evening
-
-			timingResponse = timing
-			*/timing := model.Timing{
+			timing := model.Timing{
 				Morning:       morning,
 				Afternoon:     afternoon,
 				Evening:       evening,
@@ -59,7 +62,7 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Tim
 			}
 			timingResponse = timing
 		}
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TIMING)
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_TIMING)
 	}
 
 	return timingResponse, response
@@ -68,170 +71,161 @@ func GetTiming(idUser string, w http.ResponseWriter, r *http.Request) (model.Tim
 
 func GetTimingByID(w http.ResponseWriter, r *http.Request) {
 
-	/*vars := mux.Vars(r)
+	vars := mux.Vars(r)
 	nID := vars["id"]
 
-	var timingResponse model.TimingResponse
+	var response model.RequestResponse
+	var timing model.Timing
+	//rows, err  := db.DB.Raw("SELECT id, id_med, (SELECT name FROM pharmacy_sh.med WHERE id = id_med) as name, time, alarm, start_treatment, end_treatment, period FROM pharmacy_sh.treatment_custom WHERE id_user = " + nID +"").Rows()
+	rows, err := db.DB.Table("timing").Select("morning, afternoon, evening, morning_time, afternoon_time, evening_time").Where("id_user = ?", nID).Rows()
 
-	selDB, err := dbConnector.Query("SELECT morning, afternoon, evening, morning_time, afternoon_time, evening_time FROM timing WHERE id_user = " + nID + "")
+	defer rows.Close()
+
+	util.CheckErr(err)
 
 	if err != nil {
-		panic(err.Error())
-	}
-	for selDB.Next() {
-		var morningTime, afternoonTime, eveningTime string
-		var morning, afternoon, evening byte
-		var morningBoolean, afternoonBoolean, eveningBoolean bool
-		err = selDB.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			//var timing *model.Timing
+			count = count + 1
+			var morningTime, afternoonTime, eveningTime, morning, afternoon, evening string
 
-		if err != nil {
-			panic(err.Error())
+			rows.Scan(&morning, &afternoon, &evening, &morningTime, &afternoonTime, &eveningTime)
+
+			timingAux := model.Timing{
+				Morning:       morning,
+				Afternoon:     afternoon,
+				Evening:       evening,
+				MorningTime:   morningTime,
+				AfternoonTime: afternoonTime,
+				EveningTime:   eveningTime,
+			}
+			timing = timingAux
 		}
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_TIMING)
+	}
 
-		morningBoolean = util.ByteToBool(morning)
-		fmt.Println("morningBoolean %t", morningBoolean)
-		afternoonBoolean = util.ByteToBool(afternoon)
-		eveningBoolean = util.ByteToBool(evening)
-
-		timingResponse.Morning = morningBoolean
-		timingResponse.Afternoon = afternoonBoolean
-		timingResponse.Evening = eveningBoolean
-		timingResponse.Morning_Time = morningTime
-		timingResponse.Afternoon_Time = afternoonTime
-		timingResponse.Evening_Time = eveningTime
+	timingResponse := model.TimingResponse{
+		Timing:   timing,
+		Response: response,
 	}
 
 	output, err := json.Marshal(timingResponse)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), 501)
 		return
 	}
-	w.Write(output)*/
+
+	w.Write(output)
 
 }
 
 func CreateTiming(w http.ResponseWriter, r *http.Request) {
-	/*
-		b, err := ioutil.ReadAll(r.Body)
-		defer r.Body.Close()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	var timing model.Timing
+	var response model.RequestResponse
 
-		var timing model.Timing
-		err = json.Unmarshal(b, &timing)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-		output, err := json.Marshal(timing)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	err = json.Unmarshal(b, &timing)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-		w.Write(output)
+	db := db.DB.Table("timing").Create(&timing)
 
-		query := fmt.Sprintf("INSERT INTO `pharmacy_sh`.`timing` (`id_user`, `morning`, `afternoon`, `evening`, `morning_time`, `afternoon_time`, `evening_time`)  VALUES('%d', '%d', '%d', '%d', '%s', '%s', '%s')", timing.Id_User, timing.Morning, timing.Afternoon, timing.Evening, timing.Morning_Time, timing.Afternoon_Time, timing.Evening_Time)
+	util.CheckErr(db.Error)
 
-		fmt.Println(query)
-		insert, err := db.DB.Query(query)
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
+	} else {
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_TIMING)
+	}
 
-		var timingResponse model.RequestResponse
-		if err != nil {
-			timingResponse.Code = 500
-			timingResponse.Message = err.Error()
-		} else {
-			timingResponse.Code = 200
-			timingResponse.Message = "Timing creado con éxito"
-		}
+	output, err := json.Marshal(response)
 
-		output, err2 := json.Marshal(timingResponse)
-		if err2 != nil {
-			http.Error(w, err.Error(), 501)
-			return
-		}
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
 
-		w.Write(output)
+	w.Write(output)
 
-		defer insert.Close()
-	*/
 }
 
 func UpdateTiming(w http.ResponseWriter, r *http.Request) {
-	/*
-		vars := mux.Vars(r)
-		nID := vars["id"]
 
-		b, err := ioutil.ReadAll(r.Body)
-		defer r.Body.Close()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	var response model.RequestResponse
 
-		var timing model.Timing
-		err = json.Unmarshal(b, &timing)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	vars := mux.Vars(r)
 
-		var query string = fmt.Sprintf("UPDATE `pharmacy_sh`.`timing` SET `morning` = '%d', `afternoon` = '%d', `evening` = '%d', `morning_time` = '%s', `afternoon_time` = '%s', `evening_time` = '%s' WHERE (`id_user` = '%s')", timing.Morning, timing.Afternoon, timing.Evening, timing.Morning_Time, timing.Afternoon_Time, timing.Evening_Time, nID)
+	nID := vars["id"]
 
-		fmt.Println(query)
-		update, err := db.DB.Query(query)
+	b, err := ioutil.ReadAll(r.Body)
 
-		var timingResponse model.RequestResponse
-		if err != nil {
-			timingResponse.Code = 500
-			timingResponse.Message = err.Error()
-		} else {
-			timingResponse.Code = 200
-			timingResponse.Message = "Timing actualizado con éxito"
-		}
+	defer r.Body.Close()
 
-		output, err := json.Marshal(timingResponse)
-		if err != nil {
-			http.Error(w, err.Error(), 501)
-			return
-		}
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-		w.Write(output)
+	var timing model.Timing
 
-		defer update.Close()
-	*/
+	err = json.Unmarshal(b, &timing)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	db := db.DB.Table("timing").Where("id_user = ?", nID).Updates(&timing)
+
+	util.CheckErr(db.Error)
+
+	if err != nil {
+		response = error.HandleMysqlError(db.Error)
+	} else {
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_TIMING)
+	}
+
+	output, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 }
 
 func DeleteTiming(w http.ResponseWriter, r *http.Request) {
-	/*
-		vars := mux.Vars(r)
-		nID := vars["id"]
+	var response model.RequestResponse
 
-		query := fmt.Sprintf("DELETE FROM `pharmacy_sh`.`timing` WHERE (`id_user` = '%s')", nID)
+	vars := mux.Vars(r)
 
-		fmt.Println(query)
-		insert, err := db.DB.Query(query)
+	nID := vars["id"]
 
-		var timingResponse model.RequestResponse
-		if err != nil {
-			timingResponse.Code = 500
-			timingResponse.Message = err.Error()
-		} else {
-			timingResponse.Code = 200
-			timingResponse.Message = "Timing borrado con éxito"
-		}
+	db := db.DB.Table("timing").Where("id_user= ?", nID).Delete(&model.Timing{})
 
-		output, err := json.Marshal(timingResponse)
-		if err != nil {
-			http.Error(w, err.Error(), 501)
-			return
-		}
+	util.CheckErr(db.Error)
 
-		w.Write(output)
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
+	} else {
+		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_TIMING)
+	}
 
-		defer insert.Close()
-	*/
+	output, err := json.Marshal(response)
+
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+	w.Write(output)
 }

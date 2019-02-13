@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"github.com/l3vick/go-pharmacy/model"
 )
 
@@ -58,6 +59,6 @@ func BoolToByte(b bool) byte {
 
 func CheckErr(err error) {
 	if err != nil {
-		panic(err)
+		fmt.Print(err)
 	}
 }

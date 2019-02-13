@@ -12,8 +12,6 @@ import (
 	"github.com/l3vick/go-pharmacy/util"
 )
 
-const TITLE_TREATMENTCUSTOM string = "TreatmentCustom"
-
 func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]*model.TreatmentCustomResponse, model.RequestResponse) {
 
 	var treatmentsCustomResponse []*model.TreatmentCustomResponse
@@ -50,7 +48,7 @@ func GetTreatmentsCustom(nID string, w http.ResponseWriter, r *http.Request) ([]
 
 		}
 
-		response = error.HandleNoRowsError(count, error.SELECT, TITLE_TREATMENTCUSTOM)
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_TREATMENTCUSTOM)
 	}
 
 	return treatmentsCustomResponse, response
@@ -81,7 +79,7 @@ func CreateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, TITLE_TREATMENTCUSTOM)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)
@@ -125,7 +123,7 @@ func UpdateTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, TITLE_TREATMENTCUSTOM)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)
@@ -152,7 +150,7 @@ func DeleteTreatmentCustom(w http.ResponseWriter, r *http.Request) {
 	if db.Error != nil {
 		response = error.HandleMysqlError(db.Error)
 	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.DELETE, TITLE_TREATMENTCUSTOM)
+		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_TREATMENTCUSTOM)
 	}
 
 	output, err := json.Marshal(response)
