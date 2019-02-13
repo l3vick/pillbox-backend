@@ -2,15 +2,14 @@ package db
 
 import (
 	"github.com/jinzhu/gorm"
-
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/l3vick/go-pharmacy/keys"
 )
 
 var DB *gorm.DB
 
 func ConectDB() {
 	var err error
-	DB, err = gorm.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"pharmacy_sh?charset=utf8&parseTime=True&loc=Local")
+	DB, err = gorm.Open(keys.DB_TYPE, keys.DB_USER+":"+keys.DB_PASSWORD+"@tcp("+keys.DB_DNS+")/"+keys.DB_NAME_SPECS)
 	if err != nil {
 		panic(err.Error())
 	}
