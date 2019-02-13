@@ -1,19 +1,30 @@
 package model
 
 type Pharmacy struct {
-	ID          int    `json:"id"`
-	Cif         string `json:"cif"`
-	Address     string `json:"address"`
-	NumberPhone int    `json:"phone_number"`
-	Schedule    string `json:"schedule"`
-	Name        string `json:"name"`
-	Guard       int    `json:"guard"`
-	Password    string `json:"password"`
-	Mail        string `json:"mail"`
+	ID          int     `json:"id,omitempty"`
+	Cif         string  `json:"cif,omitempty"`
+	Address     string  `json:"address,omitempty"`
+	PhoneNumber int     `json:"phone_number,omitempty"`
+	Schedule    string  `json:"schedule,omitempty"`
+	Name        string  `json:"name,omitempty"`
+	Guard       string  `json:"guard,omitempty"`
+	Password    *string `json:"password,omitempty"`
+	Mail        string  `json:"mail,omitempty"`
 }
 
 type PharmacyR struct {
-	ID    int    `json:"id"`
-	Mail  string `json:"mail"`
-	State bool   `json:"state"`
+	ID    int    `json:"id,omitempty"`
+	Mail  string `json:"mail,omitempty"`
+	State bool   `json:"state,omitempty"`
+}
+
+type PharmaciesResponse struct {
+	Pharmacies []*Pharmacy     `json:"pharmacies,omitempty"`
+	Page       Page            `json:"page,omitempty"`
+	Response   RequestResponse `json:"response,omitempty"`
+}
+
+type PharmacyResponse struct {
+	Pharmacy *Pharmacy       `json:"pharmacy,omitempty"`
+	Response RequestResponse `json:"response,omitempty"`
 }

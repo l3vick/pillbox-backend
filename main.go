@@ -24,8 +24,6 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", root).Methods("GET")
 
-	handler.SetDB(db.GetDB())
-
 	r.HandleFunc("/meds", handler.GetMeds).Methods("GET")
 	r.HandleFunc("/meds/{id}", handler.GetMed).Methods("GET")
 	r.HandleFunc("/meds", handler.CreateMed).Methods("POST")
@@ -47,7 +45,7 @@ func main() {
 	r.HandleFunc("/pharmacies/{id}", handler.UpdatePharmacy).Methods("PUT")
 	r.HandleFunc("/pharmacies/{id}", handler.DeletePharmacy).Methods("DELETE")
 
-	r.HandleFunc("/treatments/{id}", handler.GetTreatmentsByUserID).Methods("GET")
+	r.HandleFunc("/treatments/{id}", handler.GetAllTreatmentsByUserID).Methods("GET")
 	r.HandleFunc("/treatments", handler.CreateTreatment).Methods("POST")
 	r.HandleFunc("/treatments/{id}", handler.UpdateTreatment).Methods("PUT")
 	r.HandleFunc("/treatments/{id}", handler.DeleteTreatment).Methods("DELETE")

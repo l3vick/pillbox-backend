@@ -1,23 +1,20 @@
 package db
 
-import  "database/sql"
+import (
+	"github.com/jinzhu/gorm"
+	"github.com/l3vick/go-pharmacy/keys"
+)
 
-
-var db *sql.DB
-
-
-func GetDB() *sql.DB{
-	return db
-}
+var DB *gorm.DB
 
 func ConectDB() {
 	var err error
-	db, err = sql.Open("mysql", "rds_pharmacy_00"+":"+"phar00macy"+"@tcp("+"rdspharmacy00.ctiytnyzqbi7.us-east-2.rds.amazonaws.com:3306"+")/"+"pharmacy_sh")
+	DB, err = gorm.Open(keys.DB_TYPE, keys.DB_USER+":"+keys.DB_PASSWORD+"@tcp("+keys.DB_DNS+")/"+keys.DB_NAME_SPECS)
 	if err != nil {
-		panic(err.Error()) 
+		panic(err.Error())
 	}
 }
 
 func CloseDB() {
-	defer db.Close()
+	defer DB.Close()
 }
