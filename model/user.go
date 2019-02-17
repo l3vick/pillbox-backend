@@ -27,8 +27,3 @@ type UsersResponse struct {
 	Page     Page            `json:"page,omitempty"`
 	Response RequestResponse `json:"response,omitempty"`
 }
-
-type UserLogin struct {
-	Mail     string `json:"mail,omitempty"`
-	Password string `json:"password,omitempty"`
-}
