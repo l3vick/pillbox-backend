@@ -57,7 +57,7 @@ func GetMeds(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(medsResponse)
+	output, err := json.MarshalIndent(medsResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -105,7 +105,7 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(medResponse)
+	output, err := json.MarshalIndent(medResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -141,7 +141,7 @@ func CreateMed(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_MED)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -185,7 +185,7 @@ func UpdateMed(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_MED)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -211,7 +211,7 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_MED)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -268,7 +268,7 @@ func FilterMed(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(medsResponse)
+	output, err := json.MarshalIndent(medsResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return

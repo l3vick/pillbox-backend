@@ -23,9 +23,9 @@ type JsonNullBool struct {
 
 func (v *JsonNullBool) MarshalJSON() ([]byte, error) {
 	if v.Valid {
-		return json.Marshal(v.Bool)
+		return json.MarshalIndent(v.Bool, "", "  ")
 	} else {
-		return json.Marshal(nil)
+		return json.MarshalIndent(nil, "", "  ")
 	}
 }
 
@@ -47,9 +47,9 @@ func (v *JsonNullBool) UnmarshalJSON(data []byte) error {
 
 func (v *JsonNullString) MarshalJSON() ([]byte, error) {
 	if v.Valid {
-		return json.Marshal(v.String)
+		return json.MarshalIndent(v.String, "", "  ")
 	} else {
-		return json.Marshal(nil)
+		return json.MarshalIndent(nil, "", "  ")
 	}
 }
 
@@ -71,9 +71,9 @@ func (v *JsonNullString) UnmarshalJSON(data []byte) error {
 
 func (v JsonNullFloat64) MarshalJSON() ([]byte, error) {
 	if v.Valid {
-		return json.Marshal(v.Float64)
+		return json.MarshalIndent(v.Float64, "", "  ")
 	} else {
-		return json.Marshal(0)
+		return json.MarshalIndent(0, "", "  ")
 	}
 }
 
@@ -96,9 +96,9 @@ func (v *JsonNullFloat64) UnmarshalJSON(data []byte) error {
 
 func (v JsonNullInt64) MarshalJSON() ([]byte, error) {
 	if v.Valid {
-		return json.Marshal(v.Int64)
+		return json.MarshalIndent(v.Int64, "", "  ")
 	} else {
-		return json.Marshal(0)
+		return json.MarshalIndent(0, "", "  ")
 	}
 }
 

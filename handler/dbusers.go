@@ -68,7 +68,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(userResponse)
+	output, err := json.MarshalIndent(userResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -136,7 +136,7 @@ func GetUsersByPharmacyID(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(userResponse)
+	output, err := json.MarshalIndent(userResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -193,7 +193,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(userResponse)
+	output, err := json.MarshalIndent(userResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -229,7 +229,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_USER)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -273,7 +273,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_USER)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -299,7 +299,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_USER)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -342,7 +342,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_USER)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -408,7 +408,7 @@ func FilterUser(w http.ResponseWriter, r *http.Request) {
 			Page:  page,
 		}
 
-		output, err := json.Marshal(response)
+		output, err := json.MarshalIndent(response)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

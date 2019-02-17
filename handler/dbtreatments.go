@@ -22,7 +22,7 @@ func GetAllTreatmentsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	treatmentsResponse = GetTreatmentsByUserID(nID, w, r)
 
-	output, err := json.Marshal(treatmentsResponse)
+	output, err := json.MarshalIndent(treatmentsResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -142,7 +142,7 @@ func CreateTreatment(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_TREATMENT)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -186,7 +186,7 @@ func UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_TREATMENT)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -214,7 +214,7 @@ func DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_TREATMENT)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)

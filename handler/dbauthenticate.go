@@ -66,7 +66,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(loginResponse)
+	output, err := json.MarshalIndent(loginResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -120,7 +120,7 @@ func CheckMail(w http.ResponseWriter, r *http.Request) {
 		Response:  response,
 	}
 
-	output, err := json.Marshal(checkMailResponse)
+	output, err := json.MarshalIndent(checkMailResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return

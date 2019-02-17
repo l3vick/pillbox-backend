@@ -14,6 +14,7 @@ import (
 
 
 
+
 	"github.com/gorilla/mux"*/
 
 	"encoding/json"
@@ -112,7 +113,7 @@ func GetTimingByID(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(timingResponse)
+	output, err := json.MarshalIndent(timingResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -149,7 +150,7 @@ func CreateTiming(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_TIMING)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -195,7 +196,7 @@ func UpdateTiming(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_TIMING)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -221,7 +222,7 @@ func DeleteTiming(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_TIMING)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)

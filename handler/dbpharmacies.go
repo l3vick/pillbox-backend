@@ -60,7 +60,7 @@ func GetPharmacies(w http.ResponseWriter, r *http.Request) {
 		Response:   response,
 	}
 
-	output, err := json.Marshal(pharmaciesResponse)
+	output, err := json.MarshalIndent(pharmaciesResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -113,7 +113,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	output, err := json.Marshal(pharmacyResponse)
+	output, err := json.MarshalIndent(pharmacyResponse, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -149,7 +149,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_PHARMACY)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
@@ -195,7 +195,7 @@ func UpdatePharmacy(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleEmptyRowsError(db.RowsAffected, error.Update, util.TITLE_PHARMACY)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -221,7 +221,7 @@ func DeletePharmacy(w http.ResponseWriter, r *http.Request) {
 		response = error.HandleNotExistError(int(db.RowsAffected), error.DELETE, util.TITLE_PHARMACY)
 	}
 
-	output, err := json.Marshal(response)
+	output, err := json.MarshalIndent(response, "", "  ")
 
 	if err != nil {
 		http.Error(w, err.Error(), 501)
