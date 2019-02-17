@@ -1,120 +1,130 @@
 package handler
 
 import (
-	/*	"encoding/json"
-		"fmt"
-		"io/ioutil"*/
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
-	/*"github.com/l3vick/go-pharmacy/db"
-	"github.com/l3vick/go-pharmacy/model"*/)
+
+	"github.com/l3vick/go-pharmacy/db"
+	"github.com/l3vick/go-pharmacy/error"
+	"github.com/l3vick/go-pharmacy/model"
+	"github.com/l3vick/go-pharmacy/util"
+)
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	/*
-		b, err := ioutil.ReadAll(r.Body)
-		defer r.Body.Close()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
 
-		var user model.UserLogin
-		err = json.Unmarshal(b, &user)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	body, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-		query := fmt.Sprintf("SELECT id, cif, address, phone_number, schedule, `name`, guard, mail FROM pharmacy_sh.pharmacy WHERE mail = '%s' and password = '%s'", user.Mail, user.Password)
+	var user model.LoginUser
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-		fmt.Println(query)
-		selDB, err := db.DB.Query(query)
+	var response model.RequestResponse
+	var pharmacy model.Pharmacy
 
-		var checkMailResponse model.RequestResponse
-		if err != nil {
-			checkMailResponse.Code = 500
-			checkMailResponse.Message = err.Error()
-			output, _ := json.Marshal(checkMailResponse)
-			w.Write(output)
-		} else {
-			pharmacy := model.Pharmacy{}
-			for selDB.Next() {
-				var id, numberPhone, guard int
-				var name, address, scheduler, cif, mail string
-				err = selDB.Scan(&id, &cif, &address, &numberPhone, &scheduler, &name, &guard, &mail)
+	rows, err := db.DB.Table("pharmacy").Select("id, cif, address, phone_number, schedule, name, guard, mail").Where("mail = ? and password = ?", user.Mail, user.Password).Rows()
 
-				pharmacy.ID = id
-				pharmacy.Cif = cif
-				pharmacy.Address = address
-				pharmacy.NumberPhone = numberPhone
-				pharmacy.Schedule = scheduler
-				pharmacy.Name = name
-				pharmacy.Guard = guard
-				pharmacy.Mail = mail
+	defer rows.Close()
 
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					panic(err.Error())
-				}
+	util.CheckErr(err)
 
-				output, err := json.Marshal(pharmacy)
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					return
-				}
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			count = count + 1
+			var id, phoneNumber int
+			var name, address, scheduler, cif, mail, guard string
+			rows.Scan(&id, &cif, &address, &phoneNumber, &scheduler, &name, &guard, &mail)
 
-				w.Write(output)
+			pharmacyAux := model.Pharmacy{
+				ID:          id,
+				Cif:         name,
+				Address:     address,
+				PhoneNumber: phoneNumber,
+				Schedule:    scheduler,
+				Name:        name,
+				Guard:       guard,
+				Mail:        mail,
 			}
+			pharmacy = pharmacyAux
 		}
-		defer selDB.Close()
-	*/
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_USER)
+	}
+
+	loginResponse := model.LoginResponse{
+		Pharmacy: &pharmacy,
+		Response: response,
+	}
+
+	output, err := json.Marshal(loginResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 }
 
 func CheckMail(w http.ResponseWriter, r *http.Request) {
-	/*
-		mailRequest := r.URL.Query().Get("mail")
 
-		query := fmt.Sprintf("SELECT id, mail, password FROM pharmacy_sh.pharmacy WHERE mail = '%s'", mailRequest)
-		fmt.Println(query)
+	mail := r.URL.Query().Get("mail")
 
-		selDB, err := db.DB.Query(query)
+	var response model.RequestResponse
+	var checkMail model.CheckMail
 
-		var checkMailResponse model.RequestResponse
-		if err != nil {
-			checkMailResponse.Code = 500
-			checkMailResponse.Message = err.Error()
-			output, _ := json.Marshal(checkMailResponse)
-			w.Write(output)
-		} else {
-			pharmacy := model.PharmacyR{}
-			for selDB.Next() {
-				var id int
-				var mail, password string
-				err = selDB.Scan(&id, &mail, &password)
+	rows, err := db.DB.Table("pharmacy").Select("id, mail, password").Where("mail = ? ", mail).Rows()
 
-				if err != nil {
-					checkMailResponse.Code = 500
-					checkMailResponse.Message = err.Error()
-					output, _ := json.Marshal(checkMailResponse)
-					w.Write(output)
-				}
+	defer rows.Close()
 
-				pharmacy.ID = id
-				pharmacy.Mail = mail
-				if password == "" {
-					pharmacy.State = false
-				} else {
-					pharmacy.State = true
-				}
+	util.CheckErr(err)
 
-				output, err := json.Marshal(pharmacy)
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					return
-				}
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			count = count + 1
+			var id int
+			var mail, password string
 
-				w.Write(output)
+			rows.Scan(&id, &mail, &password)
+
+			checkMailAux := model.CheckMail{
+				ID:   id,
+				Mail: mail,
 			}
+
+			if password != "" {
+				checkMailAux.State = true
+			} else {
+				checkMailAux.State = false
+			}
+			checkMail = checkMailAux
+
 		}
-		defer selDB.Close()
-	*/
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_USER)
+	}
+
+	checkMailResponse := model.CheckMailResponse{
+		CheckMail: &checkMail,
+		Response:  response,
+	}
+
+	output, err := json.Marshal(checkMailResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -216,5 +217,62 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 501)
 		return
 	}
+	w.Write(output)
+}
+
+func FilterMed(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	name := vars["name"]
+	fmt.Print(name)
+	pageNumber := r.URL.Query().Get("page")
+	intPage, err := strconv.Atoi(pageNumber)
+	elementsPage := intPage * 10
+	elem := strconv.Itoa(elementsPage)
+
+	var response model.RequestResponse
+	var meds []*model.Med
+	var page model.Page
+
+	rows, err := db.DB.Table("med").Select("*").Where("name LIKE ?", fmt.Sprintf("%%%s%%", name)).Offset(elem).Limit(10).Rows()
+
+	defer rows.Close()
+
+	util.CheckErr(err)
+
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		var count = 0
+		for rows.Next() {
+			count = count + 1
+			var id, pharmacyID int
+			var name, description string
+			rows.Scan(&id, &name, &description, &pharmacyID)
+
+			medAux := model.Med{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				IDPharmacy:  pharmacyID,
+			}
+			meds = append(meds, &medAux)
+		}
+		page = util.GetPage(count, intPage)
+		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_MED)
+	}
+
+	medsResponse := model.MedsResponse{
+		Meds:     meds,
+		Page:     page,
+		Response: response,
+	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
 	w.Write(output)
 }
