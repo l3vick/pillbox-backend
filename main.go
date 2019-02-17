@@ -29,6 +29,7 @@ func main() {
 	r.HandleFunc("/meds", handler.CreateMed).Methods("POST")
 	r.HandleFunc("/meds/{id}", handler.UpdateMed).Methods("PUT")
 	r.HandleFunc("/meds/{id}", handler.DeleteMed).Methods("DELETE")
+	r.HandleFunc("/meds/filter/{name}", handler.FilterMed).Methods("GET")
 
 	r.HandleFunc("/users", handler.GetUsers).Methods("GET")
 	r.HandleFunc("/users/{id}", handler.GetUser).Methods("GET")
