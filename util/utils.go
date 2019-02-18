@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"github.com/l3vick/go-pharmacy/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetPage(count int, intPage int) model.Page {
@@ -61,4 +62,9 @@ func CheckErr(err error) {
 	if err != nil {
 		fmt.Print(err)
 	}
+}
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
