@@ -30,6 +30,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var response model.RequestResponse
 	var pharmacy model.Pharmacy
 
+	//rowPassword, err := db.DB.Table("pharmacy").Select("")
+
 	rows, err := db.DB.Table("pharmacy").Select("id, cif, address, phone_number, schedule, name, guard, mail").Where("mail = ? and password = ?", user.Mail, user.Password).Rows()
 
 	defer rows.Close()
