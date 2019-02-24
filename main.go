@@ -14,7 +14,7 @@ import (
 func root(w http.ResponseWriter, r *http.Request) {
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
-	message = "App Farmacias" + message
+	message = "Pillbox" + message
 	w.Write([]byte(message))
 }
 
@@ -24,20 +24,19 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", root).Methods("GET")
 
-	r.HandleFunc("/meds", handler.GetMeds).Methods("GET")
-	r.HandleFunc("/meds/{id}", handler.GetMed).Methods("GET")
 	r.HandleFunc("/meds", handler.CreateMed).Methods("POST")
+	r.HandleFunc("/meds/{id}", handler.GetMed).Methods("GET")
 	r.HandleFunc("/meds/{id}", handler.UpdateMed).Methods("PUT")
 	r.HandleFunc("/meds/{id}", handler.DeleteMed).Methods("DELETE")
-	r.HandleFunc("/meds/filter/{name}", handler.FilterMed).Methods("GET")
+	r.HandleFunc("/meds", handler.GetMeds).Methods("GET")
+	r.HandleFunc("/pharmacies/{id}/meds", handler.GetMedsByPharmacyID).Methods("GET")
 
-	r.HandleFunc("/users", handler.GetUsers).Methods("GET")
 	r.HandleFunc("/users/{id}", handler.GetUser).Methods("GET")
 	r.HandleFunc("/users", handler.CreateUser).Methods("POST")
 	r.HandleFunc("/users/{id}", handler.UpdateUser).Methods("PUT")
 	r.HandleFunc("/users/{id}", handler.DeleteUser).Methods("DELETE")
-	r.HandleFunc("/resetpassword/{id}", handler.ResetPassword).Methods("PUT")
-	r.HandleFunc("/filter/{filter}", handler.FilterUser).Methods("GET")
+	r.HandleFunc("/users", handler.GetUsers).Methods("GET")
+	r.HandleFunc("/pharmacies/{id}/users", handler.GetUsersByPharmacyID).Methods("GET")
 
 	r.HandleFunc("/pharmacies", handler.GetPharmacies).Methods("GET")
 	r.HandleFunc("/pharmacies/{id}/users", handler.GetUsersByPharmacyID).Methods("GET")
@@ -62,6 +61,7 @@ func main() {
 
 	r.HandleFunc("/login", handler.Login).Methods("POST")
 	r.HandleFunc("/checkMail", handler.CheckMail).Methods("GET")
+	r.HandleFunc("/resetpassword/{id}", handler.ResetPassword).Methods("PUT")
 
 	http.Handle("/", &MyServer{r})
 

@@ -14,50 +14,35 @@ import (
 	"github.com/l3vick/go-pharmacy/util"
 )
 
-func GetMeds(w http.ResponseWriter, r *http.Request) {
-	pageNumber := r.URL.Query().Get("page")
-	intPage, err := strconv.Atoi(pageNumber)
-	elementsPage := intPage * 10
-	elem := strconv.Itoa(elementsPage)
-
+func CreateMed(w http.ResponseWriter, r *http.Request) {
+	var med model.Med
 	var response model.RequestResponse
-	var meds []*model.Med
-	var page model.Page
-	var count int
 
-	rows, err := db.DB.Table("med").Select("id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med) as count").Offset(elem).Limit(10).Rows()
-
-	defer rows.Close()
-
-	util.CheckErr(err)
-
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
 	if err != nil {
-		response = error.HandleMysqlError(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = json.Unmarshal(b, &med)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	db := db.DB.Table("med").Create(&med)
+
+	util.CheckErr(db.Error)
+
+	if db.Error != nil {
+		response = error.HandleMysqlError(db.Error)
 	} else {
-		for rows.Next() {
-			var id, pharmacyID int
-			var name, description string
-			rows.Scan(&id, &name, &description, &pharmacyID, &count)
-
-			med := model.Med{
-				ID:          id,
-				Name:        name,
-				Description: description,
-				IDPharmacy:  pharmacyID,
-			}
-			meds = append(meds, &med)
-			page = util.GetPage(count, intPage)
-		}
-		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_MED)
+		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_MED)
 	}
 
-	medsResponse := model.MedsResponse{
-		Meds:     meds,
-		Page:     page,
-		Response: response,
-	}
+	output, err := json.Marshal(response)
 
-	output, err := json.Marshal(medsResponse)
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -106,43 +91,6 @@ func GetMed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	output, err := json.Marshal(medResponse)
-	if err != nil {
-		http.Error(w, err.Error(), 501)
-		return
-	}
-
-	w.Write(output)
-}
-
-func CreateMed(w http.ResponseWriter, r *http.Request) {
-	var med model.Med
-	var response model.RequestResponse
-
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	err = json.Unmarshal(b, &med)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	db := db.DB.Table("med").Create(&med)
-
-	util.CheckErr(db.Error)
-
-	if db.Error != nil {
-		response = error.HandleMysqlError(db.Error)
-	} else {
-		response = error.HandleEmptyRowsError(db.RowsAffected, error.INSERT, util.TITLE_MED)
-	}
-
-	output, err := json.Marshal(response)
-
 	if err != nil {
 		http.Error(w, err.Error(), 501)
 		return
@@ -220,11 +168,73 @@ func DeleteMed(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
-func FilterMed(w http.ResponseWriter, r *http.Request) {
+func GetMeds(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
-	name := vars["name"]
-	fmt.Print(name)
+	name := r.URL.Query().Get("name")
+
+	if name != "" {
+		FilterMedByName(name, w, r)
+	} else {
+		GetAllMeds(w, r)
+	}
+}
+
+func GetAllMeds(w http.ResponseWriter, r *http.Request) {
+	pageNumber := r.URL.Query().Get("page")
+
+	intPage, err := strconv.Atoi(pageNumber)
+	elementsPage := intPage * 10
+	elem := strconv.Itoa(elementsPage)
+
+	var response model.RequestResponse
+	var meds []*model.Med
+	var page model.Page
+	var count int
+
+	rows, err := db.DB.Table("med").Select("id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med) as count").Offset(elem).Limit(10).Rows()
+
+	defer rows.Close()
+
+	util.CheckErr(err)
+
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		for rows.Next() {
+			var id, pharmacyID int
+			var name, description string
+			rows.Scan(&id, &name, &description, &pharmacyID, &count)
+
+			med := model.Med{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				IDPharmacy:  pharmacyID,
+			}
+			meds = append(meds, &med)
+
+		}
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_MED)
+		page = util.GetPage(count, intPage)
+	}
+
+	medsResponse := model.MedsResponse{
+		Meds:     meds,
+		Page:     page,
+		Response: response,
+	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+}
+
+func FilterMedByName(name string, w http.ResponseWriter, r *http.Request) {
+
 	pageNumber := r.URL.Query().Get("page")
 	intPage, err := strconv.Atoi(pageNumber)
 	elementsPage := intPage * 10
@@ -259,7 +269,63 @@ func FilterMed(w http.ResponseWriter, r *http.Request) {
 			meds = append(meds, &medAux)
 		}
 		page = util.GetPage(count, intPage)
-		response = error.HandleNotExistError(count, error.SELECT, util.TITLE_MED)
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_MED)
+	}
+
+	medsResponse := model.MedsResponse{
+		Meds:     meds,
+		Page:     page,
+		Response: response,
+	}
+
+	output, err := json.Marshal(medsResponse)
+	if err != nil {
+		http.Error(w, err.Error(), 501)
+		return
+	}
+
+	w.Write(output)
+}
+
+func GetMedsByPharmacyID(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	nID := vars["id"]
+
+	pageNumber := r.URL.Query().Get("page")
+	intPage, err := strconv.Atoi(pageNumber)
+	elementsPage := intPage * 10
+	elem := strconv.Itoa(elementsPage)
+
+	var response model.RequestResponse
+	var meds []*model.Med
+	var page model.Page
+	var count int
+
+	rows, err := db.DB.Table("med").Select("id, name, description, id_pharmacy,(SELECT COUNT(*)  from pharmacy_sh.med WHERE id_pharmacy = "+nID+") as count").Where("id_pharmacy = ?", nID).Offset(elem).Limit(10).Rows()
+
+	defer rows.Close()
+
+	util.CheckErr(err)
+
+	if err != nil {
+		response = error.HandleMysqlError(err)
+	} else {
+		for rows.Next() {
+			var id, pharmacyID int
+			var name, description string
+			rows.Scan(&id, &name, &description, &pharmacyID, &count)
+
+			med := model.Med{
+				ID:          id,
+				Name:        name,
+				Description: description,
+				IDPharmacy:  pharmacyID,
+			}
+			meds = append(meds, &med)
+			page = util.GetPage(count, intPage)
+		}
+		response = error.HandleNoRowsError(count, error.SELECT, util.TITLE_MED)
 	}
 
 	medsResponse := model.MedsResponse{
