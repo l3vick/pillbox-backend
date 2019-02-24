@@ -220,9 +220,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, _ = util.HashPassword(user.Password)
+	passwordHash, err = util.HashPassword(user.Password)
 
-	user.Password = passwordHash
+	user.Password  = &passwordHash
 
 	db := db.DB.Table("user").Create(&user)
 
