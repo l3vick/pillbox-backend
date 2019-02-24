@@ -315,6 +315,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var response model.RequestResponse
+	var passwordHash string
 
 	vars := mux.Vars(r)
 
@@ -336,6 +337,10 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
+	passwordHash, err = util.HashPassword(user.Password)
+
+	user.Password  = &passwordHash
 
 	db := db.DB.Table("user").Where("id = ?", nID).Updates(&user)
 
