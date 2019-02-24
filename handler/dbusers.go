@@ -205,6 +205,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	var response model.RequestResponse
+	var passwordHash string
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -218,6 +219,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
+	passwordHash, _ = util.HashPassword(user.Password)
+
+	user.Password = passwordHash
 
 	db := db.DB.Table("user").Create(&user)
 

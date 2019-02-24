@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "errors"
-	"github.com/l3vick/go-pharmacy/util"
 	"net/http"
 	"strings"
 
@@ -17,9 +16,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 	message = strings.TrimPrefix(message, "/")
 	message = "App Farmacias" + message
 
-	prueba, _ := util.HashPassword("aaa")
-
-	w.Write([]byte(prueba))
+	w.Write([]byte(message))
 }
 
 func main() {
