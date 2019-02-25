@@ -8,7 +8,7 @@ type Pharmacy struct {
 	Schedule    string  `json:"schedule,omitempty"`
 	Name        string  `json:"name,omitempty"`
 	Guard       string  `json:"guard,omitempty"`
-	Password    *string `json:"password,omitempty"`
+	Password    string 	`json:"password,omitempty"`
 	Mail        string  `json:"mail,omitempty"`
 }
 

@@ -12,6 +12,8 @@ import (
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	var checkPassword bool
+	var passwordHash string
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -30,9 +32,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var response model.RequestResponse
 	var pharmacy model.Pharmacy
 
-	rows, err := db.DB.Table("pharmacy").Select("id, cif, address, phone_number, schedule, name, guard, mail").Where("mail = ? and password = ?", user.Mail, user.Password).Rows()
+	db.DB.Table("pharmacy").Select("password").Where("mail = ?", user.Mail).Row().Scan(&passwordHash)
+
+	checkPassword = util.CheckPasswordHash(user.Password, passwordHash)
+
+	if !checkPassword {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	rows, err := db.DB.Table("pharmacy").Select("id, cif, address, phone_number, schedule, name, guard, mail").Where("mail = ?", user.Mail).Rows()
 
 	defer rows.Close()
+	defer db.CloseDB()
 
 	util.CheckErr(err)
 

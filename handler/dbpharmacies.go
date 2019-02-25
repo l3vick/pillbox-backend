@@ -125,6 +125,7 @@ func GetPharmacy(w http.ResponseWriter, r *http.Request) {
 func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 	var pharmacy model.Pharmacy
 	var response model.RequestResponse
+	var passwordHash string
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -138,6 +139,10 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
+	passwordHash, err = util.HashPassword(pharmacy.Password)
+
+	pharmacy.Password  = passwordHash
 
 	db := db.DB.Table("pharmacy").Create(&pharmacy)
 
