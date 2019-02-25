@@ -11,7 +11,7 @@ type Treatment struct {
 	EndTreatment   string `json:"end_treatment,omitempty"`
 }
 
-type TreatmentResponse struct {
+type TreatmentName struct {
 	ID             int    `json:"id,omitempty"`
 	Name           string `json:"name,omitempty"`
 	Morning        string `json:"morning,omitempty"`
@@ -21,11 +21,20 @@ type TreatmentResponse struct {
 	EndTreatment   string `json:"end_treatment,omitempty"`
 }
 
+type TreatmentResponse struct {
+	Treatment TreatmentName   `json:"treatment,omitempty"`
+	Response  RequestResponse `json:"response,omitempty"`
+}
+
+type Treatments struct {
+	TreatmentsMorning   []*TreatmentName `json:"treatments_morning,omitempty"`
+	TreatmentsAfternoon []*TreatmentName `json:"treatments_afternoon,omitempty"`
+	TreatmentsEvening   []*TreatmentName `json:"treatments_evening,omitempty"`
+}
+
 type TreatmentsResponse struct {
-	TreatmentsMorning   []*TreatmentResponse       `json:"treatments_morning,omitempty"`
-	TreatmentsAfternoon []*TreatmentResponse       `json:"treatments_afternoon,omitempty"`
-	TreatmentsEvening   []*TreatmentResponse       `json:"treatments_evening,omitempty"`
-	TreatmentsCustom    []*TreatmentCustomResponse `json:"treatments_custom,omitempty"`
-	Timing              Timing                     `json:"timing,omitempty"`
-	Response            []RequestResponse          `json:"response,omitempty"`
+	Treatments       Treatments                 `json:"treatments,omitempty"`
+	TreatmentsCustom []*TreatmentCustomName `json:"treatments_custom,omitempty"`
+	Timing           Timing                     `json:"timing,omitempty"`
+	Response         []RequestResponse          `json:"response,omitempty"`
 }

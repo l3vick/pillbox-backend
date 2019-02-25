@@ -11,7 +11,7 @@ type TreatmentCustom struct {
 	Period         int    `json:"period,omitempty"`
 }
 
-type TreatmentCustomResponse struct {
+type TreatmentCustomName struct {
 	ID             int    `json:"id,omitempty"`
 	IDMed          int    `json:"id_med,omitempty"`
 	Name           string `json:"name,omitempty"`
@@ -20,4 +20,9 @@ type TreatmentCustomResponse struct {
 	StartTreatment string `json:"start_treatment,omitempty"`
 	EndTreatment   string `json:"end_treatment,omitempty"`
 	Period         int    `json:"period,omitempty"`
+}
+
+type TreatmentCustomResponse struct {
+	TreatmentCustom TreatmentCustomName `json:"treatment_custom,omitempty"`
+	Response        RequestResponse     `json:"response,omitempty"`
 }

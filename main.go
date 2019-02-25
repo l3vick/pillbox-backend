@@ -31,31 +31,33 @@ func main() {
 	r.HandleFunc("/meds", handler.GetMeds).Methods("GET")
 	r.HandleFunc("/pharmacies/{id}/meds", handler.GetMedsByPharmacyID).Methods("GET")
 
-	r.HandleFunc("/users/{id}", handler.GetUser).Methods("GET")
 	r.HandleFunc("/users", handler.CreateUser).Methods("POST")
+	r.HandleFunc("/users/{id}", handler.GetUser).Methods("GET")
 	r.HandleFunc("/users/{id}", handler.UpdateUser).Methods("PUT")
 	r.HandleFunc("/users/{id}", handler.DeleteUser).Methods("DELETE")
 	r.HandleFunc("/users", handler.GetUsers).Methods("GET")
 	r.HandleFunc("/pharmacies/{id}/users", handler.GetUsersByPharmacyID).Methods("GET")
 
-	r.HandleFunc("/pharmacies", handler.GetPharmacies).Methods("GET")
-	r.HandleFunc("/pharmacies/{id}/users", handler.GetUsersByPharmacyID).Methods("GET")
-	r.HandleFunc("/pharmacies/{id}", handler.GetPharmacy).Methods("GET")
 	r.HandleFunc("/pharmacies", handler.CreatePharmacy).Methods("POST")
+	r.HandleFunc("/pharmacies/{id}", handler.GetPharmacy).Methods("GET")
 	r.HandleFunc("/pharmacies/{id}", handler.UpdatePharmacy).Methods("PUT")
 	r.HandleFunc("/pharmacies/{id}", handler.DeletePharmacy).Methods("DELETE")
+	r.HandleFunc("/pharmacies", handler.GetPharmacies).Methods("GET")
 
-	r.HandleFunc("/treatments/{id}", handler.GetAllTreatmentsByUserID).Methods("GET")
+	r.HandleFunc("/schedule/{id}", handler.GetScheduleByUserID).Methods("GET")
+
 	r.HandleFunc("/treatments", handler.CreateTreatment).Methods("POST")
+	r.HandleFunc("/treatments/{id}", handler.GetTreatment).Methods("GET")
 	r.HandleFunc("/treatments/{id}", handler.UpdateTreatment).Methods("PUT")
 	r.HandleFunc("/treatments/{id}", handler.DeleteTreatment).Methods("DELETE")
 
 	r.HandleFunc("/treatments/custom", handler.CreateTreatmentCustom).Methods("POST")
+	r.HandleFunc("/treatments/custom/{id}", handler.GetTreatmentCustom).Methods("GET")
 	r.HandleFunc("/treatments/custom/{id}", handler.UpdateTreatmentCustom).Methods("PUT")
 	r.HandleFunc("/treatments/custom/{id}", handler.DeleteTreatmentCustom).Methods("DELETE")
 
-	r.HandleFunc("/timing/{id}", handler.GetTimingByID).Methods("GET")
 	r.HandleFunc("/timing", handler.CreateTiming).Methods("POST")
+	r.HandleFunc("/timing/{id}", handler.GetTiming).Methods("GET")
 	r.HandleFunc("/timing/{id}", handler.UpdateTiming).Methods("PUT")
 	r.HandleFunc("/timing/{id}", handler.DeleteTiming).Methods("DELETE")
 
