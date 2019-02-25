@@ -142,7 +142,7 @@ func CreatePharmacy(w http.ResponseWriter, r *http.Request) {
 
 	passwordHash, err = util.HashPassword(pharmacy.Password)
 
-	pharmacy.Password  = &passwordHash
+	pharmacy.Password  = passwordHash
 
 	db := db.DB.Table("pharmacy").Create(&pharmacy)
 

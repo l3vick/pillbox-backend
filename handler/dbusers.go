@@ -222,7 +222,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	passwordHash, err = util.HashPassword(user.Password)
 
-	user.Password  = &passwordHash
+	user.Password  = passwordHash
 
 	db := db.DB.Table("user").Create(&user)
 
@@ -340,7 +340,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 
 	passwordHash, err = util.HashPassword(user.Password)
 
-	user.Password  = &passwordHash
+	user.Password  = passwordHash
 
 	db := db.DB.Table("user").Where("id = ?", nID).Updates(&user)
 

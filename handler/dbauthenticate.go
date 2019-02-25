@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -37,8 +36,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	checkPassword = util.CheckPasswordHash(user.Password, passwordHash)
 
-	fmt.Println(user.Password, passwordHash, checkPassword)
-
 	if !checkPassword {
 		http.Error(w, err.Error(), 500)
 		return
@@ -47,6 +44,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.DB.Table("pharmacy").Select("id, cif, address, phone_number, schedule, name, guard, mail").Where("mail = ?", user.Mail).Rows()
 
 	defer rows.Close()
+	defer db.CloseDB()
 
 	util.CheckErr(err)
 
